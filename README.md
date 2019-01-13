@@ -1,6 +1,7 @@
 # A Simple Chatbot for IRC
-
-## Plans outline:
+## Status: On Hold
+Lack of motivation has struck me. Many streaming issues has put my drive to work on this to zero. I plan to pick this up again eventually as I would like my own chatbot instead of using the StreamLabs one with many bloated features I don't need.
+## Plans
 - Twitch support
 - My slot game
 - My join command

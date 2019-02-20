@@ -1,11 +1,21 @@
-# A Simple Chatbot for IRC
-## Status: On Hold
-Lack of motivation has struck me. Many streaming issues has put my drive to work on this to zero. I plan to pick this up again eventually as I would like my own chatbot instead of using the StreamLabs one with many bloated features I don't need.
+# A Simple Chatbot for Twitch IRC
+Just a simple chatbot for IRC.
+
+At the moment, it only handles simple command responses such as !title and !discord to give the user info. The plan is to add my slots program and my !join command as well as a currency/user storage system. Command responses can be edited in the code.
+
+## Dependencies
+- [Python 3.4+](https://www.python.org/downloads/)
+- [IRC Library](https://pypi.org/project/irc/) for Python
+
+
 ## Plans
-- Twitch support
 - My slot game
 - My join command
 - Add a dice game
-- Use JSON file format for user storage (UserID, Username, Currency amount (maybe use text file if it becomes too difficult)
-- Add commands and an easy way to add more (possible a standard command function that searches a JSON file. **For simple command responses only**
-- Possible chat GUI (pull chat from IRC and display it to a text box on a GUI.)
+- Use JSON file format for user storage (UserID, Username, Currency amount
+- Customizable command responses
+- Easy command additions (for simple responses at the start)
+
+## Credits
+- Column01 (Lead Dev)
+- roobarb2 (Dev)

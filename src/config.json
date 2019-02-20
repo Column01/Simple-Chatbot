@@ -1,0 +1,9 @@
+{
+  "username": "bot username here",
+  "host": "irc.chat.twitch.tv",
+  "port": 6667,
+  "token": "oauth token here",
+  "channel": "channel name here",
+  "client_id": "client ID here",
+  "poll_rate": 600
+}

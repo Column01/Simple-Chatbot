@@ -1,3 +1,7 @@
-venv
-Working Directory
 .idea
+dev/config.json
+dev/users.db
+dev/Checklist.txt
+venv
+src/SqlSearch/__pycache__/
+dev/SqlSearch/__pycache__/

@@ -2,7 +2,7 @@ import os
 import irc.bot
 import requests
 import json
-from SqlSearch import SqlSearch
+from SqliteSearch import SqliteReadDB
 import time
 
 configFile = 'config.json'
@@ -54,6 +54,8 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
 
     def do_command(self, e, cmd):
         c = self.connection
+        user_id = e.tags[11]['value']
+        username = e.tags[2]['value']
 
         # Poll the API to get current game.
         if cmd == "game":
@@ -64,28 +66,31 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
 
         # Poll the API the get the current status of the stream
         elif cmd == "join":
-            user_id = e.tags[11]['value']
-            commandname = 'joincmd'
+            command_name = 'joincmd'
             currency = 1000
-            username = str(e.tags[2]['value'])
             cooldownmessage = 'You are still on cooldown, ' + username + '. Try again later.'
             addedmessage = username + ' typed !join and was added to the database'
             existingmessage = username + 'Is already in the database. Off cooldown support is not added yet.'
             cooldown = int(time.time()) + 30
-            checkcooldown = SqlSearch.read_cooldown(user_id, commandname)
+            checkcooldown = SqliteReadDB.read_cooldown(user_id, command_name)
             if checkcooldown:
                 if checkcooldown:
                     print('User is on cooldown.')
                     c.privmsg(self.channel, cooldownmessage)
             else:
                 print('User is off cooldown... trying to add to the database')
-                joincommand = SqlSearch.add_user(user_id, username, currency, commandname, cooldown)
+                joincommand = SqliteReadDB.add_user(user_id, username, currency, command_name, cooldown)
                 if joincommand:
                     print('User added to the database')
                     c.privmsg(self.channel, addedmessage)
                 else:
                     print('User is already in the database')
                     c.privmsg(self.channel, existingmessage)
+
+        elif cmd == "coins":
+            currency = SqliteReadDB.read_currency(user_id)
+            message = 'You have {} coins, {}'.format(currency, username)
+            c.privmsg(self.channel, message)
 
         elif cmd == "title":
             url = 'https://api.twitch.tv/kraken/channels/' + self.channel_id

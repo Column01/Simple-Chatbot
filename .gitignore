@@ -3,5 +3,5 @@ dev/config.json
 dev/users.db
 dev/Checklist.txt
 venv
-src/SqlSearch/__pycache__/
-dev/SqlSearch/__pycache__/
+src/SqliteSearch/__pycache__/
+dev/SqliteSearch/__pycache__/

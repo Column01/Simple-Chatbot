@@ -8,35 +8,20 @@ c.execute("CREATE TABLE IF NOT EXISTS users(userid INT, username TEXT, currency 
 conn.commit()
 
 
-# Adds the user if they don't exist
-def add_user(userid, username, currency, commandname, cooldown):
-    c.execute("SELECT userid FROM users WHERE userid = ?", (userid,))
-    user = c.fetchone()
-    if user is None:
-        c.execute("INSERT INTO users (userid, username, currency, joincmd, slotscmd) VALUES (?, ?, ?, ?, ?)",
-                  (userid, username, currency, cooldown, '0'))
-        conn.commit()
-        addeduser = True
-    else:
-        addeduser = False
-    return addeduser
-
-
 # Reads the user's entire info. Mostly used in development but may be used as a patch method for commands
 # who refuse to work.
-def read_user(userid):
-    c.execute("SELECT * FROM users WHERE userid = ?", (userid,))
-    row = c.fetchone()
-    return row
+def read_username(userid, username):
+    c.execute("SELECT username,userid FROM users WHERE userid = ?", (userid,))
+    user = c.fetchone()
+    return user
 
 
 # Reads if the user is on cooldown
-def read_cooldown(userid, commandname):
-    c.execute("SELECT joincmd,userid FROM users WHERE userid = ?", (userid,))
-    commandname = "null"
+def read_cooldown(userid, game):
+
+    c.execute("SELECT "+game+",userid FROM users WHERE userid = ?", (userid,))
     cooldownfetch = c.fetchone()
     currenttime = int(time.time())
-    # If the user exists
     if cooldownfetch is not None:
         # and the cooldown is expired, set oncooldown to False
         if cooldownfetch[0] <= currenttime:
@@ -44,6 +29,8 @@ def read_cooldown(userid, commandname):
         # if the cooldown is not expired, set oncooldown to True
         else:
             oncooldown = True
+            cooldownremainder = int((cooldownfetch[0] - currenttime) / 60)
+            return oncooldown, cooldownremainder
     # If the user does not exist, set oncooldown to None
     else:
         oncooldown = None
@@ -52,5 +39,9 @@ def read_cooldown(userid, commandname):
 
 def read_currency(userid):
     c.execute("SELECT currency,userid FROM users where userid = ?", (userid,))
-    currencyfetch = c.fetchone()[0]
-    return currencyfetch
+    currencyfetch = c.fetchone()
+    if currencyfetch is not None:
+        currency = currencyfetch[0]
+    else:
+        currency = 0
+    return currency

@@ -11,8 +11,7 @@ conn.commit()
 
 
 # Called from the main script to update a mismatched username
-def update_username(userid):
-    username = SqliteReadDB.read_username(userid)
+def update_username(userid, username):
     c.execute("UPDATE users SET username = ? WHERE userid = ?", (username, userid))
     conn.commit()
     print("Updated username into database")

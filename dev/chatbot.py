@@ -72,7 +72,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             pass
         elif username != usernamedb[0]:
                 print(username + ' has mismatched usernames. Updating.')
-                SqliteUpdateDB.update_username(user_id)
+                SqliteUpdateDB.update_username(user_id, username)
 
         if cmd == 'debug':
             print('Recieved Debug command from ' + username + '. Printing user tags...')

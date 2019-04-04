@@ -4,7 +4,7 @@ import time
 # Connect to SQLite database
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
-c.execute("CREATE TABLE IF NOT EXISTS users(userid INT, username TEXT, currency INT, joincmd INT, slotscmd INT)")
+c.execute("CREATE TABLE IF NOT EXISTS users(userid INT, username TEXT, currency INT, _join INT, _slots INT)")
 conn.commit()
 
 
@@ -18,8 +18,7 @@ def read_username(userid):
 
 # Reads if the user is on cooldown
 def read_cooldown(userid, game):
-
-    c.execute("SELECT "+game+",userid FROM users WHERE userid = ?", (userid,))
+    c.execute("SELECT _"+game+",userid FROM users WHERE userid = ?", (userid,))
     cooldownfetch = c.fetchone()
     currenttime = int(time.time())
     if cooldownfetch is not None:

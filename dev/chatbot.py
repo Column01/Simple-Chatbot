@@ -72,7 +72,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             pass
         elif username != usernamedb[0]:
                 print(username + ' has mismatched usernames. Updating.')
-                SqliteUpdateDB.update_username(user_id, username)
+                SqliteUpdateDB.update_username(user_id)
 
         if cmd == 'debug':
             print('Recieved Debug command from ' + username + '. Printing user tags...')
@@ -82,19 +82,17 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             print('Received command:', cmd, 'from', username)
 
             if cmd == 'join':
-                game = 'joincmd'
+                game = cmd
                 currency = settings['bot_settings']['join_reward']
                 cooldown = settings['bot_settings']['join_cooldown']
                 joinmessage = settings['bot_settings']['join_message'].format(username, cmd, currency)
                 checkcooldown = SqliteReadDB.read_cooldown(user_id, game)
-                currencydb = SqliteReadDB.read_currency(user_id)
-                print(checkcooldown)
                 if checkcooldown is False:
                     print(username + ' is off cooldown... trying to update database')
-                    SqliteUpdateDB.add_currency(user_id, currency, currencydb)
+                    SqliteUpdateDB.add_currency(user_id, currency)
                     SqliteUpdateDB.add_cooldown(user_id, game, cooldown)
                     c.privmsg(self.channel, joinmessage)
-                if isinstance(checkcooldown, int):
+                elif isinstance(checkcooldown, int):
                     print('User is on cooldown.')
                     cooldownmessage = settings['bot_settings']['cooldown_message'].format(username, checkcooldown)
                     c.privmsg(self.channel, cooldownmessage)

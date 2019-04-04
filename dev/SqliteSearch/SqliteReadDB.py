@@ -10,7 +10,7 @@ conn.commit()
 
 # Reads the user's entire info. Mostly used in development but may be used as a patch method for commands
 # who refuse to work.
-def read_username(userid, username):
+def read_username(userid):
     c.execute("SELECT username,userid FROM users WHERE userid = ?", (userid,))
     user = c.fetchone()
     return user
@@ -23,14 +23,13 @@ def read_cooldown(userid, game):
     cooldownfetch = c.fetchone()
     currenttime = int(time.time())
     if cooldownfetch is not None:
-        # and the cooldown is expired, set oncooldown to False
+        # if the cooldown is expired, set oncooldown to False
         if cooldownfetch[0] <= currenttime:
             oncooldown = False
         # if the cooldown is not expired, set oncooldown to True
         else:
-            oncooldown = True
             cooldownremainder = int((cooldownfetch[0] - currenttime) / 60)
-            return oncooldown, cooldownremainder
+            return cooldownremainder
     # If the user does not exist, set oncooldown to None
     else:
         oncooldown = None

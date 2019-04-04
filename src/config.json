@@ -1,9 +1,33 @@
 {
-  "username": "Bot Username",
-  "host": "irc.chat.twitch.tv",
-  "port": 6667,
-  "token": "Oauth token (remove 'oath:')",
-  "channel": "twitch streamer username",
-  "client_id": "client_ID of bot account",
-  "poll_rate": 600
+  "bot_settings": {
+    "username": "Bot Username",
+    "host": "irc.chat.twitch.tv",
+    "port": 6667,
+    "token": "Oauth token (remove 'oath:')",
+    "channel": "twitch streamer username",
+    "client_id": "client_ID of bot account",
+    "poll_rate": 600,
+
+    "join_reward": 5000,
+    "join_cooldown": 3600,
+    "join_message": "{} typed {} and recieved {} coins.",
+    "cooldown_message": "I'm sorry {} but you are on cooldown for {} more minutes."
+  },
+  "commands": {
+    "coins": {
+      "response": "You have {currency} coins to spend, {username}!"
+    },
+    "discord":{
+      "response": "Join my discord here: https://discord.gg/5J49NNT Kappa"
+    },
+    "nani": {
+      "response": "Nani the fuck?"
+    },
+    "thot": {
+      "response": "Begone ... THOT!!!!"
+    },
+    "donate": {
+      "response": "You can donate to me at this link: https://streamlabs.com/column01"
+    }
+  }
 }

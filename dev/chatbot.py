@@ -2,8 +2,17 @@ import os
 import irc.bot
 import requests
 import json
-from SqliteSearch import SqliteReadDB, SqliteUpdateDB
-import time
+try:
+    from src import commandParser
+except ImportError:
+    try:
+        from dev import commandParser
+    except ImportError:
+        import commandParser
+try:
+    from SqliteSearch import SqliteReadDB, SqliteUpdateDB
+except ImportError:
+    import SqliteReadDB, SqliteUpdateDB
 
 configFile = 'config.json'
 path = os.path.dirname(__file__)
@@ -40,7 +49,6 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         # If a chat message starts with an exclamation point, try to run it as a command
         if e.arguments[0][:1] == '!':
             cmd = e.arguments[0].split(' ')[0][1:]
-            username = e.tags[3]['value']
             self.do_command(e, cmd)
         # If it is any other chat message, print the username and message to the console
         else:
@@ -56,79 +64,53 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         user_id = e.tags[12]['value']
         username = e.tags[3]['value']
 
-        usernamedb = SqliteReadDB.read_username(user_id, username)
-        if usernamedb is not None:
-            if username == usernamedb:
-                print(username + " has the correct username in DB")
-                pass
-            elif username != usernamedb:
-                print(username + " has mismatched usernames. Updating.")
-                SqliteUpdateDB.update_username(user_id, username)
-        else:
-            print("Adding " + username + " to database...")
+        usernamedb = SqliteReadDB.read_username(user_id)
+        if usernamedb is None:
+            print('Adding ' + username + ' to database...')
             SqliteUpdateDB.add_user(user_id, username, 0, 0, 0)
+        elif username == usernamedb[0]:
+            pass
+        elif username != usernamedb[0]:
+                print(username + ' has mismatched usernames. Updating.')
+                SqliteUpdateDB.update_username(user_id, username)
 
-        if cmd == "debug":
-            print("Recieved Debug command from " + username + ". Printing user tags and message arguments...")
+        if cmd == 'debug':
+            print('Recieved Debug command from ' + username + '. Printing user tags...')
             print(e.tags)
-            print("\n\n\n")
+            print('\n')
         else:
             print('Received command:', cmd, 'from', username)
 
-            if cmd == "join":
+            if cmd == 'join':
                 game = 'joincmd'
-                currency = settings["join_reward"]
-                cooldown = settings["join_cooldown"]
-
-                joinmessage = settings["join_message"].format(username, cmd, currency)
+                currency = settings['bot_settings']['join_reward']
+                cooldown = settings['bot_settings']['join_cooldown']
+                joinmessage = settings['bot_settings']['join_message'].format(username, cmd, currency)
                 checkcooldown = SqliteReadDB.read_cooldown(user_id, game)
                 currencydb = SqliteReadDB.read_currency(user_id)
-                cooldownmessage = settings["cooldown_message"].format(username, checkcooldown[1])
-                if checkcooldown:
-                    print('User is on cooldown.')
-                    print(checkcooldown[1])
-                    c.privmsg(self.channel, cooldownmessage)
-                else:
+                print(checkcooldown)
+                if checkcooldown is False:
                     print(username + ' is off cooldown... trying to update database')
                     SqliteUpdateDB.add_currency(user_id, currency, currencydb)
                     SqliteUpdateDB.add_cooldown(user_id, game, cooldown)
                     c.privmsg(self.channel, joinmessage)
-
-            elif cmd == "coins":
-                currency = SqliteReadDB.read_currency(user_id)
-                message = 'You have {} coins, {}'.format(currency, username)
-                c.privmsg(self.channel, message)
-
-            # Text responses
-            elif cmd == "discord":
-                message = "Join my discord here: https://discord.gg/5J49NNT"
-                c.privmsg(self.channel, message)
-
-            elif cmd == "thot":
-                message = "BEGONE ... THOT!!!!"
-                c.privmsg(self.channel, message)
-
-            elif cmd == "nani":
-                message = "Nani the fuck?"
-                c.privmsg(self.channel, message)
-
-            elif cmd == "donate":
-                message = "You can donate to me at this link: https://streamlabs.com/column01"
-                c.privmsg(self.channel, message)
-
-            # The command was not recognized
+                if isinstance(checkcooldown, int):
+                    print('User is on cooldown.')
+                    cooldownmessage = settings['bot_settings']['cooldown_message'].format(username, checkcooldown)
+                    c.privmsg(self.channel, cooldownmessage)
             else:
-                c.privmsg(self.channel, "Unknown Command " + cmd)
+                response = commandParser.response_format(e, settings, cmd)
+                c.privmsg(self.channel, response)
 
 
 def main():
-    username = settings['username']
-    client_id = settings['client_id']
-    token = settings['token']
-    channel = settings['channel']
+    username = settings['bot_settings']['username']
+    client_id = settings['bot_settings']['client_id']
+    token = settings['bot_settings']['token']
+    channel = settings['bot_settings']['channel']
     bot = TwitchBot(username, client_id, token, channel)
     bot.start()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

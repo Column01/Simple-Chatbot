@@ -40,3 +40,14 @@ def add_cooldown(userid, game, cooldown):
     c.execute("UPDATE users SET _"+game+" = ? WHERE userid = ?", (new_cooldown, userid,))
     conn.commit()
     return
+
+
+def cost_subtract(userid, cost):
+    currencydb = SqliteReadDB.read_currency(userid)
+    if currencydb >= cost:
+        new_currency = currencydb - cost
+        c.execute("UPDATE users SET currency = ? WHERE userid = ?", (new_currency, userid,))
+        conn.commit()
+        return True
+    else:
+        return False

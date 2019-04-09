@@ -3,12 +3,12 @@ import irc.bot
 import requests
 import json
 try:
-    from src import commandParser
+    from dev import commandParser, slots
 except ImportError:
     try:
-        from dev import commandParser
+        from src import commandParser, slots
     except ImportError:
-        import commandParser
+        import commandParser, stots
 try:
     from SqliteSearch import SqliteReadDB, SqliteUpdateDB
 except ImportError:
@@ -63,7 +63,6 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         c = self.connection
         user_id = e.tags[12]['value']
         username = e.tags[3]['value']
-
         usernamedb = SqliteReadDB.read_username(user_id)
         if usernamedb is None:
             print('Adding ' + username + ' to database...')
@@ -71,31 +70,44 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         elif username == usernamedb[0]:
             pass
         elif username != usernamedb[0]:
-                print(username + ' has mismatched usernames. Updating.')
-                SqliteUpdateDB.update_username(user_id, username)
-
+            print(username + ' has mismatched usernames. Updating.')
+            SqliteUpdateDB.update_username(user_id, username)
         if cmd == 'debug':
             print('Recieved Debug command from ' + username + '. Printing user tags...')
-            print(e.tags)
+            # print(e.tags)
             print('\n')
         else:
             print('Received command:', cmd, 'from', username)
-
             if cmd == 'join':
                 game = cmd
-                currency = settings['bot_settings']['join_reward']
-                cooldown = settings['bot_settings']['join_cooldown']
-                joinmessage = settings['bot_settings']['join_message'].format(username, cmd, currency)
+                currency = settings['commands']['join']['join_reward']
+                cooldown = settings['commands']['join']['join_cooldown']
                 checkcooldown = SqliteReadDB.read_cooldown(user_id, game)
                 if checkcooldown is False:
                     print(username + ' is off cooldown... trying to update database')
                     SqliteUpdateDB.add_currency(user_id, currency)
                     SqliteUpdateDB.add_cooldown(user_id, game, cooldown)
+                    reward = settings['commands']['join']['join_reward']
+                    joinmessage = settings['commands'][cmd]['success_message'].format(username=username, reward=reward,
+                                                                                      command=cmd)
                     c.privmsg(self.channel, joinmessage)
                 elif isinstance(checkcooldown, int):
                     print('User is on cooldown.')
-                    cooldownmessage = settings['bot_settings']['cooldown_message'].format(username, checkcooldown)
+                    cooldownmessage = settings['commands'][cmd]['cooldown_message'].format(username=username,
+                                                                                           cooldown=checkcooldown)
                     c.privmsg(self.channel, cooldownmessage)
+            elif cmd == 'slots':
+                result = slots.slots_execute(e, settings, cmd)
+                if isinstance(result, int):
+                    message = settings['commands'][cmd]['cooldown_message'].format(username=username,
+                                                                                   cooldown=result)
+                    c.privmsg(self.channel, message)
+                elif len(result) == 2:
+                    message = result[0] + result[1]
+                    c.privmsg(self.channel, message)
+                else:
+                    message = result
+                    c.privmsg(self.channel, message)
             else:
                 response = commandParser.response_format(e, settings, cmd)
                 c.privmsg(self.channel, response)

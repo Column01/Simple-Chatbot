@@ -6,7 +6,7 @@
     "token": "Oauth token (remove 'oath:')",
     "channel": "twitch streamer username",
     "client_id": "client_ID of bot account",
-    "poll_rate": 600,
+    "poll_rate": 600
   },
   "commands": {
     "coins": {

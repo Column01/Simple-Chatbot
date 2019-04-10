@@ -7,11 +7,6 @@
     "channel": "twitch streamer username",
     "client_id": "client_ID of bot account",
     "poll_rate": 600,
-
-    "join_reward": 5000,
-    "join_cooldown": 3600,
-    "join_message": "{} typed {} and recieved {} coins.",
-    "cooldown_message": "I'm sorry {} but you are on cooldown for {} more minutes."
   },
   "commands": {
     "coins": {

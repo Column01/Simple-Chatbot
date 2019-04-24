@@ -27,7 +27,7 @@ def read_cooldown(userid, game):
             oncooldown = False
         # if the cooldown is not expired, set oncooldown to True
         else:
-            cooldownremainder = int((cooldownfetch[0] - currenttime) / 60)
+            cooldownremainder = cooldownfetch[0] - currenttime
             return cooldownremainder
     # If the user does not exist, set oncooldown to None
     else:

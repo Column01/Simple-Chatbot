@@ -93,14 +93,18 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                     c.privmsg(self.channel, joinmessage)
                 elif isinstance(checkcooldown, int):
                     print('User is on cooldown.')
+                    cooldown = divmod(checkcooldown, 60)
                     cooldownmessage = settings['commands'][cmd]['cooldown_message'].format(username=username,
-                                                                                           cooldown=checkcooldown)
+                                                                                           minutes=cooldown[0],
+                                                                                           seconds=cooldown[1])
                     c.privmsg(self.channel, cooldownmessage)
             elif cmd == 'slots':
                 result = slots.slots_execute(e, settings, cmd)
                 if isinstance(result, int):
+                    cooldown = divmod(result, 60)
                     message = settings['commands'][cmd]['cooldown_message'].format(username=username,
-                                                                                   cooldown=result)
+                                                                                   minutes=cooldown[0],
+                                                                                   seconds=cooldown[1])
                     c.privmsg(self.channel, message)
                 elif len(result) == 2:
                     message = result[0] + result[1]

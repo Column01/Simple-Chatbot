@@ -25,13 +25,13 @@
       "response": "You can donate to me at this link: https://streamlabs.com/column01"
     },
     "join": {
-      "cooldown_message": "You are still on cooldown for {cooldown} minutes, {username}. Try again later.",
+      "cooldown_message": "You are still on cooldown for {minutes} minutes and {seconds} seconds, {username}. Try again later.",
       "success_message": "{username} typed !{command} and recieved {reward} coins.",
       "join_reward": 5000,
       "join_cooldown": 3600
     },
     "slots": {
-      "cooldown_message": "You are still on cooldown for {cooldown} minutes, {username}. Try again later.",
+      "cooldown_message": "You are still on cooldown for {minutes} minutes and {seconds} seconds, {username}. Try again later.",
       "cooldown": 300,
       "double_reward": 2000,
     "triple_reward": 10000,

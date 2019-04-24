@@ -1,5 +1,5 @@
 # Simple Chatbot
-Just a simple chatbot for IRC.
+A chatbot written in Python for Twitch chat. Keep your viewers engaged with an interactive chatbot where they can earn currency and gamble for fun! Make fun little command responses that are unique to you!
 
 ## Dependencies
 - [Python 3.4+](https://www.python.org/downloads/)

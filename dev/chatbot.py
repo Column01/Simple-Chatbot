@@ -2,17 +2,11 @@ import os
 import irc.bot
 import requests
 import json
-try:
-    from dev import commandParser, slots
-except ImportError:
-    try:
-        from src import commandParser, slots
-    except ImportError:
-        import commandParser, stots
-try:
-    from SqliteSearch import SqliteReadDB, SqliteUpdateDB
-except ImportError:
-    import SqliteReadDB, SqliteUpdateDB
+import modules.SqliteReadDB as SqliteReadDB
+import modules.SqliteUpdateDB as SqliteUpdateDB
+import modules.commandParser as commandParser
+import modules.slots as slots
+
 
 configFile = 'config.json'
 path = os.path.dirname(__file__)
@@ -25,7 +19,6 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         self.client_id = client_id
         self.token = token
         self.channel = '#' + channel
-
         # Get the channel id, we will need this for v5 API calls
         url = 'https://api.twitch.tv/kraken/users?login=' + channel
         headers = {'Client-ID': client_id, 'Accept': 'application/vnd.twitchtv.v5+json'}
@@ -55,14 +48,14 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             # Getting message
             message = e.arguments[0]
             # Getting Username from tags
-            username = e.tags[3]['value']
+            username = Data.username(e)
             print(username + ': ' + message)
         return
 
     def do_command(self, e, cmd):
         c = self.connection
-        user_id = e.tags[12]['value']
-        username = e.tags[3]['value']
+        user_id = Data.user_id(e)
+        username = Data.username(e)
         usernamedb = SqliteReadDB.read_username(user_id)
         if usernamedb is None:
             print('Adding ' + username + ' to database...')
@@ -92,7 +85,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                                                                                       command=cmd)
                     c.privmsg(self.channel, joinmessage)
                 elif isinstance(checkcooldown, int):
-                    print('User is on cooldown.')
+                    print(username + ' is on cooldown for ' + game)
                     cooldown = divmod(checkcooldown, 60)
                     cooldownmessage = settings['commands'][cmd]['cooldown_message'].format(username=username,
                                                                                            minutes=cooldown[0],
@@ -115,6 +108,26 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             else:
                 response = commandParser.response_format(e, settings, cmd)
                 c.privmsg(self.channel, response)
+
+
+class Data:
+    @staticmethod
+    def username(e):
+        for i in range(len(e.tags)):
+            if e.tags[i]['key'] == 'display-name':
+                username = e.tags[i]['value']
+                return username
+            else:
+                pass
+
+    @staticmethod
+    def user_id(e):
+        for i in range(len(e.tags)):
+            if e.tags[i]['key'] == 'user-id':
+                user_id = e.tags[i]['value']
+                return user_id
+            else:
+                pass
 
 
 def main():

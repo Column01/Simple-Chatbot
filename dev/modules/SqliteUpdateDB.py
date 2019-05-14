@@ -1,9 +1,6 @@
 import sqlite3
 import time
-try:
-    from SqliteSearch import SqliteReadDB
-except ImportError:
-    import SqliteReadDB
+import modules.SqliteReadDB as SqliteReadDB
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
 c.execute("CREATE TABLE IF NOT EXISTS users(userid INT, username TEXT, currency INT, _join INT, _slots INT)")

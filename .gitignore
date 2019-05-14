@@ -1,7 +1,6 @@
 .idea
 dev/config.json
 dev/users.db
-dev/Checklist.txt
 venv
 **/__pycache__/
 

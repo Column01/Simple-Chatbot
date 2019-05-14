@@ -1,8 +1,6 @@
 import random
-try:
-    from SqliteSearch import SqliteReadDB, SqliteUpdateDB
-except ImportError:
-    import SqliteReadDB, SqliteUpdateDB
+import modules.SqliteReadDB as SqliteReadDB
+import modules.SqliteUpdateDB as SqliteUpdateDB
 
 
 def slots_execute(e, settings, cmd):

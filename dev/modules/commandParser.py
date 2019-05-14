@@ -1,7 +1,4 @@
-try:
-    from SqliteSearch import SqliteReadDB
-except ImportError:
-    import SqliteReadDB
+import modules.SqliteReadDB as SqliteReadDB
 
 
 def response_format(e, settings, cmd):

@@ -3,25 +3,24 @@ A chatbot written in Python for Twitch chat. Keep your viewers engaged with an i
 
 ## Dependencies
 - [Python 3.4+](https://www.python.org/downloads/)
-- [Requests Library](https://pypi.org/project/requests/) for python
-- [IRC Library](https://pypi.org/project/irc/) for Python
-- Command to get dependencies: `pip install requests irc`
+- [Requests Library](https://pypi.org/project/requests/)
+- [IRC Library](https://pypi.org/project/irc/)
 
-## How to run:
+(Command to get dependencies: `pip install requests irc`)
 
-Fill in the info needed inside the `config.json` file. You will need your own bot account and to register it as a twitch application [here](https://dev.twitch.tv/console). Once registered, you can get the client ID there and then you need to generate an OAuth token [here](https://twitchapps.com/tmi/) (Make sure to allow access using the bot account and not the streamer account!).
+## Setup
+First off you need to run the main script to generate a template config so you can fill in the info needed (see **"How to Run"** below). You will need your own bot account and you will need to [register it as a twitch application](https://dev.twitch.tv/console). Once registered, you can get the client ID there and add it in the config file. Then you need to generate an OAuth token using [this tool](https://twitchapps.com/tmi/) while logged into the bot account (**NOT** the streamer account).
 
-Edit the chatbot config to include the command responses and appropriate links you want (if you don't, it will send my donation link and my discord invite if people use those commands). To add commands, just add a new command object in the config file identical to the others and change the data to the name (the name is what triggers it in chat. So if you added "test" the command in chat would be !test) and the response you want for it).
+Now you can edit the chatbot commands in the config to include responses and appropriate links you want (if you don't, it will send my donation link and my discord invite if people use those commands). To add commands, just add a new command object in the config file identical to the others, name it the command you want to run (So if you added "test" the command in chat would be !test) and change the response.
 
 - Currently supported placeholders for basic text response commands:
 	- `{username}`, `{command}`, `{currency}`
 - Currently support game response placeholders:
 	- `{username}`, `{command}`, `{reward}` and for cooldown remainders: `{minutes}` , `{seconds}`
-		- If your cooldown is longer than 1 hour, you're doing something wrong. Not adding `{hours}`. End of discussion :P
 
-### Setup
-- Create a venv with the dependencies above fulfilled and activate that venv
-- `python .\chatbot.py`
+## How to Run
+- Add them directly to your system site packages or Create a virtualenv with the dependencies fulfilled and then activate that venv.
+- Run the chatbot `python chatbot.py`
 
 ## Donations
 Donations help me stay motivated and working on projects like these. If you feel led to donate, please click the link [here](https://www.paypal.me/column01). Any amount is appreciated but is not necessary to enjoy this program.

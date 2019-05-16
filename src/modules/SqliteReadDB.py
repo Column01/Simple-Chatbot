@@ -1,3 +1,7 @@
+# Author: Colin Andress
+# Project: Simple Chatbot
+# Filename: SqliteReadDB.py
+# Purpose: Reads data from the SQLite DB file. Called from various scripts.
 import sqlite3
 import time
 
@@ -11,8 +15,8 @@ conn.commit()
 # Reads the user's entire info. Mostly used in development but may be used as a patch method for commands
 # who refuse to work.
 def read_username(userid):
-    c.execute("SELECT username,userid FROM users WHERE userid = ?", (userid,))
-    user = c.fetchone()
+    c.execute("SELECT username FROM users WHERE userid = ?", (userid,))
+    user = c.fetchone()[0]
     return user
 
 

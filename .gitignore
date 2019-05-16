@@ -1,6 +1,5 @@
 .idea
-dev/config.json
-dev/users.db
+src/config.json
+src/users.db
 venv
 **/__pycache__/
-

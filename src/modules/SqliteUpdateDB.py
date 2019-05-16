@@ -1,3 +1,7 @@
+# Author: Colin Andress
+# Project: Simple Chatbot
+# Filename: SqliteReadDB.py
+# Purpose: Updates data in the SQLite DB file. Called from various scripts.
 import sqlite3
 import time
 import modules.SqliteReadDB as SqliteReadDB
@@ -9,10 +13,19 @@ conn.commit()
 
 # Called from the main script to update a mismatched username
 def update_username(userid, username):
-    c.execute("UPDATE users SET username = ? WHERE userid = ?", (username, userid))
-    conn.commit()
-    print("Updated username into database")
-    return
+    usernamedb = SqliteReadDB.read_username(userid)
+    if usernamedb is None:
+        print('Adding ' + username + ' to database...')
+        add_user(userid, username, 0, 0, 0)
+        return
+    elif username == usernamedb:
+        return
+    elif username != usernamedb:
+        print(username + ' has mismatched usernames. Updating.')
+        c.execute("UPDATE users SET username = ? WHERE userid = ?", (username, userid))
+        conn.commit()
+        print("Updated username into database")
+        return
 
 
 # Adds the user with some cookie cutter data (provided from main script)

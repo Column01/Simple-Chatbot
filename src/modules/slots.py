@@ -1,3 +1,7 @@
+# Author: Colin Andress
+# Project: Simple Chatbot
+# Filename: slots.py
+# Purpose: The slots logic for the !slots game. Called from chatbot.py
 import random
 import modules.SqliteReadDB as SqliteReadDB
 import modules.SqliteUpdateDB as SqliteUpdateDB

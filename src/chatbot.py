@@ -106,10 +106,10 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                 # If the cooldown comes back as a number (in seconds)
                 elif isinstance(checkcooldown, int):
                     # Convert it to minutes and seconds and message the user using the cooldown message from the config
-                    cooldown = divmod(checkcooldown, 60)
+                    minutes, seconds = divmod(checkcooldown, 60)
                     cooldownmessage = settings['commands'][cmd]['cooldown_message'].format(username=username,
-                                                                                           minutes=cooldown[0],
-                                                                                           seconds=cooldown[1])
+                                                                                           minutes=minutes,
+                                                                                           seconds=seconds)
                     c.privmsg(self.channel, cooldownmessage)
             # If the command is !slots
             elif cmd == 'slots':
@@ -117,10 +117,10 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                 result = slots.slots_execute(e, settings, cmd)
                 # if the result is a number, they are on cooldown so reply with the cooldown message
                 if isinstance(result, int):
-                    cooldown = divmod(result, 60)
+                    minutes, seconds = divmod(result, 60)
                     message = settings['commands'][cmd]['cooldown_message'].format(username=username,
-                                                                                   minutes=cooldown[0],
-                                                                                   seconds=cooldown[1])
+                                                                                   minutes=minutes,
+                                                                                   seconds=seconds)
                     c.privmsg(self.channel, message)
                 # If the result has 2 items, that means it was successful. Print the roll and the result
                 elif len(result) == 2:

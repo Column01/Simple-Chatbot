@@ -31,18 +31,18 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         self.token = token
         self.channel = '#' + channel
         # Get the channel id for v5 API calls if wanted
-        url = 'https://api.twitch.tv/kraken/users?login=' + channel
+        url = 'https://api.twitch.tv/kraken/users?login={channel}'.format(channel=channel)
         headers = {'Client-ID': client_id, 'Accept': 'application/vnd.twitchtv.v5+json'}
         r = requests.get(url, headers=headers).json()
         self.channel_id = r['users'][0]['_id']
         # Create IRC bot connection
         server = 'irc.chat.twitch.tv'
         port = 6667
-        print('Connecting to ' + server + ' on port ' + str(port) + '...')
+        print('Connecting to {server} on port {port}...'.format(server=server, port=port))
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port, token)], username, username)
 
     def on_welcome(self, c, e):
-        print('Joining ' + self.channel)
+        print('Joining {channel}'.format(channel=self.channel))
         # Making general requests from twitch so the bot can function
         c.cap('REQ', ':twitch.tv/membership')
         c.cap('REQ', ':twitch.tv/tags')
@@ -61,7 +61,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             message = e.arguments[0]
             # Getting Username from tags
             username = Data.username(e)
-            print(username + ': ' + message)
+            print('{username}: {message}'.format(username=username, message=message))
         return
 
     def do_command(self, e, cmd):
@@ -72,15 +72,22 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         if cmd == 'debug':
             # If the debug command sender is the broadcaster or a channel mod
             if Data.is_broadcaster(e) or Data.is_mod(e):
-                print('Recieved Debug command from {}... Printing tags'.format(username))
-                print(e.tags)
+                print('Recieved Debug command from {username}... Printing tags'.format(username=username))
+                c.privmsg(self.channel, "/w {username} Printed tags to the console of the chatbot. "
+                                        "I hope you were asked to run this "
+                                        "or you wanted to debug something".format(username=username))
+                print("User Tags:\n{tags}\n"
+                      "Recieved Message: {message}\n"
+                      "Connected Channel: {channel}\n"
+                      "Channel ID: {channelid}\n"
+                      "".format(channel=self.channel, channelid=self.channel_id, tags=e.tags, message=e.arguments[0]))
             else:
-                c.privmsg(self.channel, "You are not authorized to use the debug command, {}. "
+                c.privmsg(self.channel, "/w {username} You are not authorized to use the debug command, {username}. "
                                         "Please ask the streamer for permission if you believe this is "
-                                        "an error.".format(username))
+                                        "an error.".format(username=username))
         # if it isn't the debug command, try some other commands.
         else:
-            print('Received command:', cmd, 'from', username)
+            print('Received command: {cmd} from {username}'.format(cmd=cmd, username=username))
             # If the command is the !join command
             if cmd == 'join':
                 game = cmd
@@ -90,7 +97,6 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                 checkcooldown = SqliteReadDB.read_cooldown(user_id, game)
                 # If they are off cooldown, let the command execute as planned
                 if checkcooldown is False:
-                    print(username + ' is off cooldown... trying to update database')
                     SqliteUpdateDB.add_currency(user_id, currency)
                     SqliteUpdateDB.add_cooldown(user_id, game, cooldown)
                     reward = settings['commands']['join']['join_reward']
@@ -99,7 +105,6 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                     c.privmsg(self.channel, joinmessage)
                 # If the cooldown comes back as a number (in seconds)
                 elif isinstance(checkcooldown, int):
-                    print(username + ' is on cooldown for ' + game)
                     # Convert it to minutes and seconds and message the user using the cooldown message from the config
                     cooldown = divmod(checkcooldown, 60)
                     cooldownmessage = settings['commands'][cmd]['cooldown_message'].format(username=username,

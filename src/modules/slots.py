@@ -5,12 +5,13 @@
 import random
 import modules.SqliteReadDB as SqliteReadDB
 import modules.SqliteUpdateDB as SqliteUpdateDB
+import modules.Data as Data
 
 
 def slots_execute(e, settings, cmd):
     # Variables galore!
-    username = e.tags[3]['value']
-    userid = e.tags[12]['value']
+    username = Data.username(e)
+    userid = Data.user_id(e)
     cost = settings["commands"][cmd]["cost"]
     cooldown = settings["commands"][cmd]["cooldown"]
     reel = settings["commands"][cmd]["reel"]

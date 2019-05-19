@@ -8,9 +8,10 @@ import requests
 import json
 import modules.SqliteReadDB as SqliteReadDB
 import modules.SqliteUpdateDB as SqliteUpdateDB
-import modules.commandParser as commandParser
+import modules.CommandParser as CommandParser
 import modules.slots as slots
 import modules.config as config
+import modules.Data as Data
 
 
 # Load the config file and check if it exists. If it doesn't, generate a template config and quit.
@@ -31,10 +32,10 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         self.token = token
         self.channel = '#' + channel
         # Get the channel id for v5 API calls if wanted
-        url = 'https://api.twitch.tv/kraken/users?login={channel}'.format(channel=channel)
+        url = 'https://api.twitch.tv/helix/users?login={channel}'.format(channel=channel)
         headers = {'Client-ID': client_id, 'Accept': 'application/vnd.twitchtv.v5+json'}
         r = requests.get(url, headers=headers).json()
-        self.channel_id = r['users'][0]['_id']
+        self.channel_id = r['data'][0]['id']
         # Create IRC bot connection
         server = 'irc.chat.twitch.tv'
         port = 6667
@@ -48,6 +49,13 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         c.cap('REQ', ':twitch.tv/tags')
         c.cap('REQ', ':twitch.tv/commands')
         c.join(self.channel)
+
+    def on_pubnotice(self, c, e):
+        if e.arguments[0]:
+            print(e.arguments[0])
+
+    def on_whisper(self, c, e):
+        TwitchBot.on_pubmsg(self, c, e)
 
     def on_pubmsg(self, c, e):
         Data.check_valid_username(e)
@@ -132,57 +140,8 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                     c.privmsg(self.channel, message)
             # If the command is anything else, try and parse it from the config file and message the response.
             else:
-                response = commandParser.parse_command(e, settings, cmd)
+                response = CommandParser.parse_command(e, settings, cmd)
                 c.privmsg(self.channel, response)
-
-
-# Data class. Call any function and pass it the tags (e) and it will return whatever the function is named.
-class Data:
-    @staticmethod
-    def username(e):
-        for i in range(len(e.tags)):
-            if e.tags[i]['key'] == 'display-name':
-                username = e.tags[i]['value']
-                return username
-            else:
-                pass
-
-    @staticmethod
-    def user_id(e):
-        for i in range(len(e.tags)):
-            if e.tags[i]['key'] == 'user-id':
-                user_id = e.tags[i]['value']
-                return user_id
-            else:
-                pass
-
-    @staticmethod
-    def is_broadcaster(e):
-        for i in range(len(e.tags)):
-            if e.tags[i]['key'] == 'badges':
-                if e.tags[i]['value'] == 'broadcaster/1':
-                    return True
-                else:
-                    return False
-            else:
-                pass
-
-    @staticmethod
-    def is_mod(e):
-        for i in range(len(e.tags)):
-            if e.tags[i]['key'] == 'mod':
-                if e.tags[i]['value'] == '1':
-                    return True
-                else:
-                    return False
-            else:
-                pass
-
-    @staticmethod
-    def check_valid_username(e):
-        username = Data.username(e)
-        user_id = Data.user_id(e)
-        SqliteUpdateDB.update_username(user_id, username)
 
 
 def main():
@@ -201,4 +160,4 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         print("Recieved Keyboard Interrupt, closing chatbot and cleaning up...")
-        config.yeet(SystemExit)
+        Data.yeet(SystemExit)

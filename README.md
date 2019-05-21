@@ -18,6 +18,8 @@ Now you can edit the chatbot commands in the config to include responses and app
 - Currently support game response placeholders:
 	- `{username}`, `{command}`, `{reward}` and for cooldown remainders: `{minutes}` , `{seconds}`
 
+If you recieve and error regarding config settings (error has something like `settings[something][something][etc...]` in it) that means you need to update your config. Just move your existing one out of the folder, run the bot to generate a new one, and replace responses and bot details as needed. This rarely happens (only happens when a new game is added.)
+
 ## How to Run
 - Add them directly to your system site packages or Create a virtualenv with the dependencies fulfilled and then activate that venv.
 - Run the chatbot `python chatbot.py`
@@ -25,8 +27,16 @@ Now you can edit the chatbot commands in the config to include responses and app
 ## Donations
 Donations help me stay motivated and working on projects like these. If you feel led to donate, please click the link [here](https://www.paypal.me/column01). Any amount is appreciated but is not necessary to enjoy this program.
 
+## Game Commands
+- `!join`
+	- Rewards the user with a set amount of currency and puts them on cooldown. This is intended to make sure everyone has some currency to play other games.
+- `!slots`
+	- Slots game. Rolls the slots from a configurable reel and rewards the user currency depending on the number of matches they get, and the type of match (super jackpot if you get 3 KappaPride's, otherwise its a triple match or a double match.)
+- `!dice <guess> <bet>`
+	- Rolls a dice (of configurable size) and awards the user a multiplier of their bet if they get the correct number. Probability is not the same as a real dice due to limitations with random numbers and computers (not really random.)
+
 ## Todo
-- Add a dice game
+- Nothing at the moment. Please suggest things by creating an issue on the repository.
 
 ## Contributors
 - Column01 (Dev)

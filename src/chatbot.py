@@ -10,6 +10,7 @@ import modules.SqliteReadDB as SqliteReadDB
 import modules.SqliteUpdateDB as SqliteUpdateDB
 import modules.CommandParser as CommandParser
 import modules.slots as slots
+import modules.dice as dice
 import modules.config as config
 import modules.Data as Data
 
@@ -61,7 +62,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         Data.check_valid_username(e)
         # If a chat message starts with an exclamation point, try to run it as a command
         if e.arguments[0][:1] == '!':
-            cmd = e.arguments[0].split(' ')[0][1:]
+            cmd = e.arguments[0][1:].split(' ')
             self.do_command(e, cmd)
         # If it is any other chat message, print the username and message to the console
         else:
@@ -77,7 +78,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         # Command sender's username and user_id are grabbed from the tags
         user_id = Data.user_id(e)
         username = Data.username(e)
-        if cmd == 'debug':
+        if cmd[0] == 'debug':
             # If the debug command sender is the broadcaster or a channel mod
             if Data.is_broadcaster(e) or Data.is_mod(e):
                 print('Recieved Debug command from {username}... Printing tags'.format(username=username))
@@ -95,9 +96,11 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                                         "an error.".format(username=username))
         # if it isn't the debug command, try some other commands.
         else:
-            print('Received command: {cmd} from {username}'.format(cmd=cmd, username=username))
+            cmdmessage = e.arguments[0][1:]
+            print('Recieved Command "{cmd}" from {username}'.format(cmd=cmdmessage, username=username))
             # If the command is the !join command
-            if cmd == 'join':
+            if cmd[0] == 'join':
+                cmd = cmd[0]
                 game = cmd
                 # Check cooldown and load necessary settings
                 currency = settings['commands']['join']['join_reward']
@@ -110,7 +113,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                     reward = settings['commands']['join']['join_reward']
                     joinmessage = settings['commands'][cmd]['success_message'].format(username=username, reward=reward,
                                                                                       command=cmd)
-                    c.privmsg(self.channel, joinmessage)
+                    self.send_message(joinmessage)
                 # If the cooldown comes back as a number (in seconds)
                 elif isinstance(checkcooldown, int):
                     # Convert it to minutes and seconds and message the user using the cooldown message from the config
@@ -118,9 +121,10 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                     cooldownmessage = settings['commands'][cmd]['cooldown_message'].format(username=username,
                                                                                            minutes=minutes,
                                                                                            seconds=seconds)
-                    c.privmsg(self.channel, cooldownmessage)
+                    self.send_message(cooldownmessage)
             # If the command is !slots
-            elif cmd == 'slots':
+            elif cmd[0] == 'slots':
+                cmd = cmd[0]
                 # Execute the slots
                 result = slots.slots_execute(e, settings, cmd)
                 # if the result is a number, they are on cooldown so reply with the cooldown message
@@ -129,19 +133,43 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                     message = settings['commands'][cmd]['cooldown_message'].format(username=username,
                                                                                    minutes=minutes,
                                                                                    seconds=seconds)
-                    c.privmsg(self.channel, message)
+                    self.send_message(message)
                 # If the result has 2 items, that means it was successful. Print the roll and the result
                 elif len(result) == 2:
                     message = result[0] + result[1]
-                    c.privmsg(self.channel, message)
-                # Ff all else fails and only one result comes back, they don't have enough money to use the slots.
+                    self.send_message(message)
+                # If all else fails and only one result comes back, they don't have enough money to use the slots.
                 else:
                     message = result
-                    c.privmsg(self.channel, message)
+                    self.send_message(message)
+
+            # If the command is !dice
+            elif cmd[0] == 'dice':
+                if cmd[1] and cmd[2]:
+                    result = dice.dice_game(e, settings, cmd)
+                    # if the result is a number, they are on cooldown so reply with the cooldown message
+                    if isinstance(result, int):
+                        minutes, seconds = divmod(result, 60)
+                        message = settings['commands'][cmd[0]]['cooldown_message'].format(username=username,
+                                                                                          minutes=minutes,
+                                                                                          seconds=seconds)
+                        self.send_message(message)
+                    # else just send the message
+                    else:
+                        self.send_message(result)
+
             # If the command is anything else, try and parse it from the config file and message the response.
             else:
+                tmp = []
+                for i in cmd:
+                    tmp.append(i + ' ')
+                cmd = ''.join(tmp)[:-1]
                 response = CommandParser.parse_command(e, settings, cmd)
-                c.privmsg(self.channel, response)
+                self.send_message(response)
+
+    def send_message(self, message):
+        c = self.connection
+        c.privmsg(self.channel, message)
 
 
 def main():

@@ -25,7 +25,7 @@ def read_cooldown(userid, game):
     c.execute("SELECT _"+game+",userid FROM users WHERE userid = ?", (userid,))
     cooldownfetch = c.fetchone()
     currenttime = int(time.time())
-    if cooldownfetch is not None:
+    if cooldownfetch[0] is not None:
         # if the cooldown is expired, set oncooldown to False
         if cooldownfetch[0] <= currenttime:
             oncooldown = False
@@ -35,7 +35,7 @@ def read_cooldown(userid, game):
             return cooldownremainder
     # If the user does not exist, set oncooldown to None
     else:
-        oncooldown = None
+        oncooldown = False
     return oncooldown
 
 

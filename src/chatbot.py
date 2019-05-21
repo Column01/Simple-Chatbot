@@ -51,12 +51,14 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         c.cap('REQ', ':twitch.tv/commands')
         c.join(self.channel)
 
+    # if we get a notice that a message we sent was invalid, print the notice
     def on_pubnotice(self, c, e):
         if e.arguments[0]:
             print(e.arguments[0])
 
+    # if we get a whisper, treat it like a normal message
     def on_whisper(self, c, e):
-        TwitchBot.on_pubmsg(self, c, e)
+        self.on_pubmsg(c, e)
 
     def on_pubmsg(self, c, e):
         Data.check_valid_username(e)
@@ -145,6 +147,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
 
             # If the command is !dice
             elif cmd[0] == 'dice':
+                # and it has both arguments set (guess and bet)
                 if cmd[1] and cmd[2]:
                     result = dice.dice_game(e, settings, cmd)
                     # if the result is a number, they are on cooldown so reply with the cooldown message
@@ -187,5 +190,5 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print("Recieved Keyboard Interrupt, closing chatbot and cleaning up...")
+        print("Received Keyboard Interrupt, closing chatbot and cleaning up...")
         Data.yeet(SystemExit)

@@ -7,8 +7,20 @@ import time
 import modules.SqliteReadDB as SqliteReadDB
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
-c.execute("CREATE TABLE IF NOT EXISTS users(userid INT, username TEXT, currency INT, _join INT, _slots INT)")
+c.execute("CREATE TABLE IF NOT EXISTS users(userid INT, username TEXT, currency INT, _join INT, _slots INT, _dice INT)")
 conn.commit()
+c.execute("PRAGMA table_info('users')")
+databaselist = c.fetchall()
+columnlist = ["userid", "username", "currency", "_join", "_slots", "_dice"]
+for item in columnlist:
+    i = columnlist.index(item)
+    try:
+        if item in databaselist[i][1]:
+            pass
+    except IndexError:
+        c.execute("ALTER TABLE users ADD COLUMN " + item + " INT")
+        print("Added new game table {}".format(item))
+    conn.commit()
 
 
 # Called from the main script to update a mismatched username
@@ -16,7 +28,7 @@ def update_username(userid, username):
     usernamedb = SqliteReadDB.read_username(userid)
     if usernamedb is None:
         print('Adding ' + username + ' to database...')
-        add_user(userid, username, 0, 0, 0)
+        add_user(userid, username, 0, 0, 0, 0)
         return
     elif username == usernamedb:
         return
@@ -29,9 +41,9 @@ def update_username(userid, username):
 
 
 # Adds the user with some cookie cutter data (provided from main script)
-def add_user(userid, username, currency, joincooldown, slotscooldown):
-    c.execute("INSERT INTO users (userid, username, currency, _join, _slots) VALUES (?, ?, ?, ?, ?)",
-              (userid, username, currency, joincooldown, slotscooldown))
+def add_user(userid, username, currency, joincooldown, slotscooldown, dicecooldown):
+    c.execute("INSERT INTO users (userid, username, currency, _join, _slots, _dice) VALUES (?, ?, ?, ?, ?, ?)",
+              (userid, username, currency, joincooldown, slotscooldown, dicecooldown))
     conn.commit()
     return
 

@@ -16,7 +16,7 @@ conn.commit()
 # who refuse to work.
 def read_username(userid):
     c.execute("SELECT username FROM users WHERE userid = ?", (userid,))
-    user = c.fetchone()[0]
+    user = c.fetchone()
     return user
 
 

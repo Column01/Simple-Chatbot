@@ -4,6 +4,7 @@
 # Purpose: Reads data from the SQLite DB file. Called from various scripts.
 import sqlite3
 import time
+import modules.helpers as helpers
 
 # Connect to SQLite database
 conn = sqlite3.connect('users.db')
@@ -25,13 +26,15 @@ def read_cooldown(userid, game):
     c.execute("SELECT _"+game+",userid FROM users WHERE userid = ?", (userid,))
     cooldownfetch = c.fetchone()
     currenttime = int(time.time())
-    if cooldownfetch[0] is not None:
+    if cooldownfetch is not None:
+        if helpers.test_list_item(cooldownfetch, 0):
+            cooldownfetch = cooldownfetch[0]
         # if the cooldown is expired, set oncooldown to False
-        if cooldownfetch[0] <= currenttime:
+        if cooldownfetch <= currenttime:
             oncooldown = False
         # if the cooldown is not expired, set oncooldown to True
         else:
-            cooldownremainder = cooldownfetch[0] - currenttime
+            cooldownremainder = cooldownfetch - currenttime
             return cooldownremainder
     # If the user does not exist, set oncooldown to None
     else:

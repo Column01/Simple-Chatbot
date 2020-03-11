@@ -12,7 +12,7 @@ import modules.CommandParser as CommandParser
 import modules.slots as slots
 import modules.dice as dice
 import modules.config as config
-import modules.Data as Data
+from modules.Data import Data
 
 
 # Load the config file and check if it exists. If it doesn't, generate a template config and quit.
@@ -32,6 +32,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         self.client_id = client_id
         self.token = token
         self.channel = '#' + channel
+        self.data = None
         # Get the channel id for v5 API calls if wanted
         url = 'https://api.twitch.tv/helix/users?login={channel}'.format(channel=channel)
         headers = {'Client-ID': client_id, 'Accept': 'application/vnd.twitchtv.v5+json'}
@@ -61,28 +62,26 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         self.on_pubmsg(c, e)
 
     def on_pubmsg(self, c, e):
-        Data.check_valid_username(e)
+        self.data = Data(e)
+        self.data.check_valid_username()
         # If a chat message starts with an exclamation point, try to run it as a command
         if e.arguments[0][:1] == '!':
             cmd = e.arguments[0][1:].split(' ')
             self.do_command(e, cmd)
         # If it is any other chat message, print the username and message to the console
         else:
-            # Getting message
             message = e.arguments[0]
-            # Getting Username from tags
-            username = Data.username(e)
+            username = self.data.username
             print('{username}: {message}'.format(username=username, message=message))
         return
 
     def do_command(self, e, cmd):
         c = self.connection
-        # Command sender's username and user_id are grabbed from the tags
-        user_id = Data.user_id(e)
-        username = Data.username(e)
+        user_id = self.data.userid
+        username = self.data.username
         if cmd[0] == 'debug':
             # If the debug command sender is the broadcaster or a channel mod
-            if Data.is_broadcaster(e) or Data.is_mod(e):
+            if self.data.is_broadcaster or self.data.is_mod:
                 print('Recieved Debug command from {username}... Printing tags'.format(username=username))
                 c.privmsg(self.channel, "/w {username} Printed tags to the console of the chatbot. "
                                         "I hope you were asked to run this "
@@ -115,7 +114,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                     reward = settings['commands']['join']['join_reward']
                     joinmessage = settings['commands'][cmd]['success_message'].format(username=username, reward=reward,
                                                                                       command=cmd)
-                    self.send_message(joinmessage)
+                    c.privmsg(self.channel, joinmessage)
                 # If the cooldown comes back as a number (in seconds)
                 elif isinstance(checkcooldown, int):
                     # Convert it to minutes and seconds and message the user using the cooldown message from the config
@@ -123,43 +122,43 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                     cooldownmessage = settings['commands'][cmd]['cooldown_message'].format(username=username,
                                                                                            minutes=minutes,
                                                                                            seconds=seconds)
-                    self.send_message(cooldownmessage)
+                    c.privmsg(self.channel, cooldownmessage)
             # If the command is !slots
             elif cmd[0] == 'slots':
                 cmd = cmd[0]
                 # Execute the slots
-                result = slots.slots_execute(e, settings, cmd)
+                result = slots.slots_execute(e, settings, cmd, self.data)
+                print(result)
+                print(isinstance(result, int))
                 # if the result is a number, they are on cooldown so reply with the cooldown message
                 if isinstance(result, int):
                     minutes, seconds = divmod(result, 60)
                     message = settings['commands'][cmd]['cooldown_message'].format(username=username,
                                                                                    minutes=minutes,
                                                                                    seconds=seconds)
-                    self.send_message(message)
+                    c.privmsg(self.channel, message)
                 # If the result has 2 items, that means it was successful. Print the roll and the result
                 elif len(result) == 2:
                     message = result[0] + result[1]
-                    self.send_message(message)
+                    c.privmsg(self.channel, message)
                 # If all else fails and only one result comes back, they don't have enough money to use the slots.
                 else:
                     message = result
-                    self.send_message(message)
+                    c.privmsg(self.channel, message)
 
             # If the command is !dice
             elif cmd[0] == 'dice':
-                # and it has both arguments set (guess and bet)
-                if cmd[1] and cmd[2]:
-                    result = dice.dice_game(e, settings, cmd)
-                    # if the result is a number, they are on cooldown so reply with the cooldown message
-                    if isinstance(result, int):
-                        minutes, seconds = divmod(result, 60)
-                        message = settings['commands'][cmd[0]]['cooldown_message'].format(username=username,
-                                                                                          minutes=minutes,
-                                                                                          seconds=seconds)
-                        self.send_message(message)
-                    # else just send the message
-                    else:
-                        self.send_message(result)
+                result = dice.dice_game(e, settings, cmd, self.data)
+                # if the result is a number, they are on cooldown so reply with the cooldown message
+                if isinstance(result, int):
+                    minutes, seconds = divmod(result, 60)
+                    message = settings['commands'][cmd[0]]['cooldown_message'].format(username=username,
+                                                                                        minutes=minutes,
+                                                                                        seconds=seconds)
+                    c.privmsg(self.channel, message)
+                # else just send the message
+                else:
+                    c.privmsg(self.channel, message)
 
             # If the command is anything else, try and parse it from the config file and message the response.
             else:
@@ -167,12 +166,8 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                 for i in cmd:
                     tmp.append(i + ' ')
                 cmd = ''.join(tmp)[:-1]
-                response = CommandParser.parse_command(e, settings, cmd)
-                self.send_message(response)
-
-    def send_message(self, message):
-        c = self.connection
-        c.privmsg(self.channel, message)
+                response = CommandParser.parse_command(e, settings, cmd, self.data)
+                c.privmsg(self.channel, message)
 
 
 def main():
@@ -191,4 +186,4 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         print("Received Keyboard Interrupt, closing chatbot and cleaning up...")
-        Data.yeet(SystemExit)
+        exit(0)

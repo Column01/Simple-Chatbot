@@ -3,3 +3,6 @@ src/config.json
 src/users.db
 venv
 **/__pycache__/
+chatbot.code-workspace
+
+.vscode/

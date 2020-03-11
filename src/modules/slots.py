@@ -5,13 +5,12 @@
 import random
 import modules.SqliteReadDB as SqliteReadDB
 import modules.SqliteUpdateDB as SqliteUpdateDB
-import modules.Data as Data
 
 
-def slots_execute(e, settings, cmd):
+def slots_execute(e, settings, cmd, data):
     # Variables galore!
-    username = Data.username(e)
-    userid = Data.user_id(e)
+    username = data.username
+    userid = data.userid
     cost = settings["commands"][cmd]["cost"]
     cooldown = settings["commands"][cmd]["cooldown"]
     reel = settings["commands"][cmd]["reel"]
@@ -62,7 +61,7 @@ def slots_execute(e, settings, cmd):
                       "your balance. You can also run !join to gain some to kick start your earning!".format(username)
             return message
     # If the cooldown check returns a number, return that they are on cooldown and the duration of the cooldown
-    elif isinstance(user_cooldown, int):
+    else:
         return user_cooldown
 
 

@@ -3,12 +3,11 @@
 # Filename: CommandParser.py
 # Purpose: Parses commands from the config file and formats the response. Called from chatbot.py
 import modules.SqliteReadDB as SqliteReadDB
-import modules.Data as Data
 
 
-def parse_command(e, settings, cmd):
-    username = Data.username(e)
-    user_id = Data.user_id(e)
+def parse_command(e, settings, cmd, data):
+    username = data.username
+    user_id = data.userid
     currency = SqliteReadDB.read_currency(user_id)
     for i in settings['commands']:
         if i == cmd:

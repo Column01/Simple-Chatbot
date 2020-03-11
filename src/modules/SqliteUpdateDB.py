@@ -5,6 +5,8 @@
 import sqlite3
 import time
 import modules.SqliteReadDB as SqliteReadDB
+
+
 conn = sqlite3.connect('users.db')
 c = conn.cursor()
 c.execute("CREATE TABLE IF NOT EXISTS users(userid INT, username TEXT, currency INT, _join INT, _slots INT, _dice INT)")
@@ -30,9 +32,9 @@ def update_username(userid, username):
         print('Adding ' + username + ' to database...')
         add_user(userid, username, 0, 0, 0, 0)
         return
-    elif username == usernamedb:
+    elif username == usernamedb[0]:
         return
-    elif username != usernamedb:
+    elif username != usernamedb[0]:
         print(username + ' has mismatched usernames. Updating.')
         c.execute("UPDATE users SET username = ? WHERE userid = ?", (username, userid))
         conn.commit()

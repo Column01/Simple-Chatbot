@@ -9,10 +9,11 @@ import json
 import modules.SqliteReadDB as SqliteReadDB
 import modules.SqliteUpdateDB as SqliteUpdateDB
 import modules.CommandParser as CommandParser
-import modules.slots as slots
-import modules.dice as dice
 import modules.config as config
+import modules.slots as slots
 from modules.Data import Data
+
+from Games.DiceGame import DiceGame
 
 
 # Load the config file and check if it exists. If it doesn't, generate a template config and quit.
@@ -27,12 +28,14 @@ except FileNotFoundError:
 
 
 class TwitchBot(irc.bot.SingleServerIRCBot):
-    def __init__(self, username, client_id, token, channel):
+    def __init__(self, username, client_id, token, channel, settings):
         print('Thanks for using the chatbot! Use Ctrl+C to exit safely.')
         self.client_id = client_id
         self.token = token
         self.channel = '#' + channel
         self.data = None
+        self.dice_games = []
+        self.settings = settings
         # Get the channel id for v5 API calls if wanted
         url = 'https://api.twitch.tv/helix/users?login={channel}'.format(channel=channel)
         headers = {'Client-ID': client_id, 'Accept': 'application/vnd.twitchtv.v5+json'}
@@ -148,18 +151,28 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
 
             # If the command is !dice
             elif cmd[0] == 'dice':
-                result = dice.dice_game(e, settings, cmd, self.data)
-                # if the result is a number, they are on cooldown so reply with the cooldown message
-                if isinstance(result, int):
-                    minutes, seconds = divmod(result, 60)
-                    message = settings['commands'][cmd[0]]['cooldown_message'].format(username=username,
-                                                                                        minutes=minutes,
-                                                                                        seconds=seconds)
-                    c.privmsg(self.channel, message)
-                # else just send the message
+                # Make sure we have all arguments for the cmd.
+                if len(cmd) == 3:
+                    # If the second argument is "accept" that means its a user accepting a dice battle from another person. 
+                    if cmd[1] == "accept":
+                        # Forward the event to all dice games and let it parse if the user running it is being waited on.
+                        checks_for_player_two = []
+                        for game in self.dice_games:
+                            test = game.on_pubmsg(self.data)
+                            checks_for_player_two.append(test)
+                        # Basically just counts all the returns for the dice game instances and if all elements are false, that means the
+                        # user is not being waited on.
+                        if checks_for_player_two.count(False) == len(checks_for_player_two):
+                            self.connection.privmsg(self.channel, f"You are not being waited on for a dice game, {self.data.username}. Start a dice game with \"!dice <opponent name> <bet>\"")
+                    # If it isn't "accept" we wanna start a new dice battle
+                    else:
+                        dice_game = DiceGame(self.data, self.connection, self.channel, self.settings, cmd)
+                        dice_game.run()
+                        self.dice_games.append(dice_game)
                 else:
-                    c.privmsg(self.channel, message)
-
+                    self.connection.privmsg(self.channel, "Sorry, you must be missing something to use the dice command. Use "
+                                                          "\"!dice <opponent name> <bet>\" to start a new game.")
+            
             # If the command is anything else, try and parse it from the config file and message the response.
             else:
                 tmp = []
@@ -167,7 +180,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                     tmp.append(i + ' ')
                 cmd = ''.join(tmp)[:-1]
                 response = CommandParser.parse_command(e, settings, cmd, self.data)
-                c.privmsg(self.channel, message)
+                c.privmsg(self.channel, response)
 
 
 def main():
@@ -176,7 +189,7 @@ def main():
     client_id = settings['bot_settings']['client_id']
     token = settings['bot_settings']['token']
     channel = settings['bot_settings']['channel']
-    bot = TwitchBot(username, client_id, token, channel)
+    bot = TwitchBot(username, client_id, token, channel, settings)
     bot.start()
 
 

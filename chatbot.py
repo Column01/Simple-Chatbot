@@ -2,19 +2,20 @@
 # Project: Simple Chatbot
 # Filename: chatbot.py
 # Purpose: Main twitch chatbot script.
+import json
 import os
+
 import irc.bot
 import requests
-import json
-import modules.SqliteReadDB as SqliteReadDB
-import modules.SqliteUpdateDB as SqliteUpdateDB
+
 import modules.CommandParser as CommandParser
 import modules.config as config
 import modules.slots as slots
-from modules.Data import Data
-
+import modules.SqliteReadDB as SqliteReadDB
+import modules.SqliteUpdateDB as SqliteUpdateDB
 from Games.DiceGame import DiceGame
-
+from modules.Data import Data
+from modules.thread_cleaner import ThreadCleaner
 
 # Load the config file and check if it exists. If it doesn't, generate a template config and quit.
 configFile = 'config.json'
@@ -28,19 +29,22 @@ except FileNotFoundError:
 
 
 class TwitchBot(irc.bot.SingleServerIRCBot):
-    def __init__(self, username, client_id, token, channel, settings):
+    def __init__(self, username, client_id, token, chan, settings):
         print('Thanks for using the chatbot! Use Ctrl+C to exit safely.')
         self.client_id = client_id
         self.token = token
-        self.channel = '#' + channel
+        self.channel = '#' + chan
         self.data = None
         self.dice_games = []
         self.settings = settings
         # Get the channel id for v5 API calls if wanted
-        url = 'https://api.twitch.tv/helix/users?login={channel}'.format(channel=channel)
+        url = 'https://api.twitch.tv/helix/users?login={channel}'.format(channel=chan)
         headers = {'Client-ID': client_id, 'Accept': 'application/vnd.twitchtv.v5+json'}
         r = requests.get(url, headers=headers).json()
         self.channel_id = r['data'][0]['id']
+        # Initialize the thread cleaner
+        t_cleaner = ThreadCleaner(self)
+        t_cleaner.start()
         # Create IRC bot connection
         server = 'irc.chat.twitch.tv'
         port = 6667
@@ -86,7 +90,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             # If the debug command sender is the broadcaster or a channel mod
             if self.data.is_broadcaster or self.data.is_mod:
                 print('Recieved Debug command from {username}... Printing tags'.format(username=username))
-                c.privmsg(self.channel, "/w {username} Printed tags to the console of the chatbot. "
+                c.privmsg(self.channel, "{username} Printed tags to the console of the chatbot. "
                                         "I hope you were asked to run this "
                                         "or you wanted to debug something".format(username=username))
                 print("User Tags:\n{tags}\n"
@@ -95,7 +99,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                       "Channel ID: {channelid}\n"
                       "".format(channel=self.channel, channelid=self.channel_id, tags=e.tags, message=e.arguments[0]))
             else:
-                c.privmsg(self.channel, "/w {username} You are not authorized to use the debug command, {username}. "
+                c.privmsg(self.channel, "{username} You are not authorized to use the debug command, {username}. "
                                         "Please ask the streamer for permission if you believe this is "
                                         "an error.".format(username=username))
         # if it isn't the debug command, try some other commands.
@@ -152,7 +156,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             # If the command is !dice
             elif cmd[0] == 'dice':
                 # Make sure we have all arguments for the cmd.
-                if len(cmd) == 3:
+                if len(cmd) >= 2:
                     # If the second argument is "accept" that means its a user accepting a dice battle from another person. 
                     if cmd[1] == "accept":
                         # Forward the event to all dice games and let it parse if the user running it is being waited on.
@@ -167,7 +171,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                     # If it isn't "accept" we wanna start a new dice battle
                     else:
                         dice_game = DiceGame(self.data, self.connection, self.channel, self.settings, cmd)
-                        dice_game.run()
+                        dice_game.start()
                         self.dice_games.append(dice_game)
                 else:
                     self.connection.privmsg(self.channel, "Sorry, you must be missing something to use the dice command. Use "
@@ -181,6 +185,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                 cmd = ''.join(tmp)[:-1]
                 response = CommandParser.parse_command(e, settings, cmd, self.data)
                 c.privmsg(self.channel, response)
+        
 
 
 def main():

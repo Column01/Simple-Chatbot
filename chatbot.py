@@ -5,7 +5,7 @@
 import json
 import os
 
-import irc.bot
+from irc.bot import SingleServerIRCBot
 import requests
 
 import modules.CommandParser as CommandParser
@@ -28,7 +28,7 @@ except FileNotFoundError:
     config.generate_config()
 
 
-class TwitchBot(irc.bot.SingleServerIRCBot):
+class TwitchBot(SingleServerIRCBot):
     def __init__(self, username, client_id, token, chan, settings):
         print('Thanks for using the chatbot! Use Ctrl+C to exit safely.')
         self.client_id = client_id
@@ -49,7 +49,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         server = 'irc.chat.twitch.tv'
         port = 6667
         print('Connecting to {server} on port {port}...'.format(server=server, port=port))
-        irc.bot.SingleServerIRCBot.__init__(self, [(server, port, token)], username, username)
+        SingleServerIRCBot.__init__(self, [(server, port, token)], username, username)
 
     def on_welcome(self, c, e):
         print('Joining {channel}'.format(channel=self.channel))
@@ -89,23 +89,22 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         if cmd[0] == 'debug':
             # If the debug command sender is the broadcaster or a channel mod
             if self.data.is_broadcaster or self.data.is_mod:
-                print('Recieved Debug command from {username}... Printing tags'.format(username=username))
-                c.privmsg(self.channel, "{username} Printed tags to the console of the chatbot. "
+                print(f'Recieved Debug command from {username}... Printing tags')
+                c.privmsg(self.channel, f"{username} Printed tags to the console of the chatbot. "
                                         "I hope you were asked to run this "
-                                        "or you wanted to debug something".format(username=username))
-                print("User Tags:\n{tags}\n"
-                      "Recieved Message: {message}\n"
-                      "Connected Channel: {channel}\n"
-                      "Channel ID: {channelid}\n"
-                      "".format(channel=self.channel, channelid=self.channel_id, tags=e.tags, message=e.arguments[0]))
+                                        "or you wanted to debug something")
+                print(f"User Tags:\n{e.tags}\n"
+                      f"Recieved Message: {e.arguments[0]}\n"
+                      f"Connected Channel: {self.channel}\n"
+                      f"Channel ID: {self.channel_id}\n")
             else:
-                c.privmsg(self.channel, "{username} You are not authorized to use the debug command, {username}. "
+                c.privmsg(self.channel, f"{username} You are not authorized to use the debug command, {username}. "
                                         "Please ask the streamer for permission if you believe this is "
-                                        "an error.".format(username=username))
+                                        "an error.")
         # if it isn't the debug command, try some other commands.
         else:
-            cmdmessage = e.arguments[0][1:]
-            print('Recieved Command "{cmd}" from {username}'.format(cmd=cmdmessage, username=username))
+            cmd_message = e.arguments[0][1:]
+            print(f'Recieved Command "{cmd_message}" from {username}')
             # If the command is the !join command
             if cmd[0] == 'join':
                 cmd = cmd[0]
@@ -186,7 +185,6 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                 response = CommandParser.parse_command(e, settings, cmd, self.data)
                 c.privmsg(self.channel, response)
         
-
 
 def main():
     # Load some config settings and start the bot

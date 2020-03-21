@@ -11,5 +11,5 @@ class ThreadCleaner(Thread):
             if len(self.twitch_bot_instance.dice_games) > 0:
                 for thread in self.twitch_bot_instance.dice_games:
                     if not thread.is_alive():
-                        print("Dice gane thread finished executing so we're gonna remove it now.")
+                        print("Dice game thread finished executing so we're gonna remove it now.")
                         self.twitch_bot_instance.dice_games.remove(thread)

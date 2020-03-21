@@ -9,24 +9,20 @@ class DiceGame(Thread):
 
     def __init__(self, data, conn, chan, sett, cmd):
         Thread.__init__(self)
-        print("Starting a new dice game thread.")
+        self.usage = "Use \"!dice <opponent name> <bet>\" to start a game or \"!dice accept\" to accept a battle."
         self.settings = sett
         self.connection = conn
         self.channel = chan
         self.cmd = cmd
         self.waiting_for_accept = True
         self.player_one = data
-        if len(cmd) == 3:
-            if int(cmd[2]) > 0:
-                self.wager = int(cmd[2])
-            else:
-                self.send_message("You must enter a bet that is more than zero.")
-                self.wager = -1
+        if len(cmd) == 3 and int(cmd[2]) > 0:
+            self.wager = int(cmd[2])
         else:
-            self.send_message("You must enter a bet that is more than zero.")
             self.wager = -1
         self.player_to_wait_for = cmd[1]
         self.player_two = None
+        print(f"Starting a new dice game thread. For {self.player_one.username} versus {self.player_to_wait_for}")
 
     def run(self):
         self.start_game()
@@ -34,9 +30,10 @@ class DiceGame(Thread):
 
     def start_game(self):
         if self.wager == -1:
+            self.send_message(f"You must enter a bet that is more than zero. {self.usage}")
             return
         if self.is_challenging_self():
-            self.send_message("You cannot dice battle yourself! Please specify another user you lonely goof.")
+            self.send_message(f"You cannot dice battle yourself! Please specify another user, you lonely goof. {self.usage}")
             return
         if self.is_player_two_in_chat():
             self.send_message(f"Hey @{self.player_to_wait_for}! "
@@ -61,7 +58,7 @@ class DiceGame(Thread):
                     while player_one_roll == player_two_roll:
                         player_one_roll = random.randint(dice_min, dice_max)
                         player_two_roll = random.randint(dice_min, dice_max)
-                self.send_message(f"Rolling the dice... {self.player_one.username} rolled {player_one_roll} and {self.player_two.username} rolled: {player_two_roll}")
+                self.send_message(f"Rolling the dice... {self.player_one.username} rolled {player_one_roll} and {self.player_two.username} rolled {player_two_roll}")
                 if player_one_roll > player_two_roll:
                     # Player one wins
                     self.send_message(f"Congratulations {self.player_one.username}! You won the battle.")
@@ -93,6 +90,11 @@ class DiceGame(Thread):
                     return True
         return False
 
+    """Checks whether the user is challenging themself to a dice battle.
+    
+    Returns:
+        Boolean -- Whether or not they challenged themselves
+    """    
     def is_challenging_self(self):
         return self.player_one.username.lower() == self.player_to_wait_for.lower()
     

@@ -68,6 +68,8 @@ def slots_execute(e, settings, cmd, data):
 def slots_roll(reel):
     slots_result = []
     for i in range(3):
+        # To supress unused warning for i
+        del i
         # Picks a random choice from the reel and appends it to an array
         slot = random.choice(reel)
         slots_result.append(slot)

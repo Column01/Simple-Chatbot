@@ -175,7 +175,6 @@ class TwitchBot(SingleServerIRCBot):
                 else:
                     self.connection.privmsg(self.channel, "Sorry, you must be missing something to use the dice command. Use "
                                                           "\"!dice <opponent name> <bet>\" to start a new game.")
-            
             # If the command is anything else, try and parse it from the config file and message the response.
             else:
                 tmp = []

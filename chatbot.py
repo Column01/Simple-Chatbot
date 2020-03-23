@@ -34,7 +34,6 @@ class TwitchBot(SingleServerIRCBot):
         self.client_id = client_id
         self.token = token
         self.channel = '#' + chan
-        self.data = None
         self.dice_games = []
         self.settings = settings
         # Get the channel id for v5 API calls if wanted
@@ -69,8 +68,8 @@ class TwitchBot(SingleServerIRCBot):
         self.on_pubmsg(c, e)
 
     def on_pubmsg(self, c, e):
-        self.data = Data(e)
-        self.data.check_valid_username()
+        data = Data(e)
+        data.check_valid_username()
         # If a chat message starts with an exclamation point, try to run it as a command
         if e.arguments[0][:1] == '!':
             cmd = e.arguments[0][1:].split(' ')
@@ -78,17 +77,18 @@ class TwitchBot(SingleServerIRCBot):
         # If it is any other chat message, print the username and message to the console
         else:
             message = e.arguments[0]
-            username = self.data.username
+            username = data.username
             print('{username}: {message}'.format(username=username, message=message))
         return
 
     def do_command(self, e, cmd):
         c = self.connection
-        user_id = self.data.userid
-        username = self.data.username
+        data = Data(e)
+        user_id = data.userid
+        username = data.username
         if cmd[0] == 'debug':
             # If the debug command sender is the broadcaster or a channel mod
-            if self.data.is_broadcaster or self.data.is_mod:
+            if data.is_broadcaster or data.is_mod:
                 print(f'Recieved Debug command from {username}... Printing tags')
                 c.privmsg(self.channel, f"{username} Printed tags to the console of the chatbot. "
                                         "I hope you were asked to run this "
@@ -133,9 +133,7 @@ class TwitchBot(SingleServerIRCBot):
             elif cmd[0] == 'slots':
                 cmd = cmd[0]
                 # Execute the slots
-                result = slots.slots_execute(e, settings, cmd, self.data)
-                print(result)
-                print(isinstance(result, int))
+                result = slots.slots_execute(e, settings, cmd, data)
                 # if the result is a number, they are on cooldown so reply with the cooldown message
                 if isinstance(result, int):
                     minutes, seconds = divmod(result, 60)
@@ -161,15 +159,15 @@ class TwitchBot(SingleServerIRCBot):
                         # Forward the event to all dice games and let it parse if the user running it is being waited on.
                         checks_for_player_two = []
                         for game in self.dice_games:
-                            test = game.on_pubmsg(self.data)
+                            test = game.on_pubmsg(data)
                             checks_for_player_two.append(test)
                         # Basically just counts all the returns for the dice game instances and if all elements are false, that means the
                         # user is not being waited on.
                         if checks_for_player_two.count(False) == len(checks_for_player_two):
-                            self.connection.privmsg(self.channel, f"You are not being waited on for a dice game, {self.data.username}. Start a dice game with \"!dice <opponent name> <bet>\"")
+                            self.connection.privmsg(self.channel, f"You are not being waited on for a dice game, {data.username}. Start a dice game with \"!dice <opponent name> <bet>\"")
                     # If it isn't "accept" we wanna start a new dice battle
                     else:
-                        dice_game = DiceGame(self.data, self.connection, self.channel, self.settings, cmd)
+                        dice_game = DiceGame(data, self.connection, self.channel, self.settings, cmd)
                         dice_game.start()
                         self.dice_games.append(dice_game)
                 else:
@@ -181,7 +179,7 @@ class TwitchBot(SingleServerIRCBot):
                 for i in cmd:
                     tmp.append(i + ' ')
                 cmd = ''.join(tmp)[:-1]
-                response = CommandParser.parse_command(e, settings, cmd, self.data)
+                response = CommandParser.parse_command(e, settings, cmd, data)
                 c.privmsg(self.channel, response)
         
 

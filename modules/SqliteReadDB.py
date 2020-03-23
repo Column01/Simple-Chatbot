@@ -28,7 +28,7 @@ def read_cooldown(userid, game):
     currenttime = int(time.time())
     if cooldownfetch is not None:
         if helpers.test_list_item(cooldownfetch, 0):
-            cooldownfetch = cooldownfetch[0]
+            cooldownfetch = int(cooldownfetch[0])
         # if the cooldown is expired, set oncooldown to False
         if cooldownfetch <= currenttime:
             oncooldown = False

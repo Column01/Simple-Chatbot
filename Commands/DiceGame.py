@@ -3,7 +3,6 @@ from timeit import default_timer as timer
 import requests
 import random
 
-import modules.SqliteUpdateDB as SqliteUpdateDB
 from Database.SQLiteConnector import SQLiteConnector
 
 class DiceGame(Thread):

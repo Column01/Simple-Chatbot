@@ -2,7 +2,7 @@
 # Project: Simple Chatbot
 # Filename: data.py
 # Purpose: Inits the user information
-import modules.SqliteUpdateDB as SqliteUpdateDB
+from Database.SQLiteConnector import SQLiteConnector
 
 class Data:
     def __init__(self, e):
@@ -10,7 +10,7 @@ class Data:
         self.userid = None
         self.is_broadcaster = False
         self.is_mod = False
-
+        
         self.set_information(e)
 
 
@@ -54,6 +54,7 @@ class Data:
 
 
     def check_valid_username(self):
+        database = SQLiteConnector()
         username_internal = self.username
         user_id_internal = self.userid
-        SqliteUpdateDB.update_username(user_id_internal, username_internal)
+        database.update_username(user_id_internal, username_internal)

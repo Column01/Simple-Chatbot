@@ -5,15 +5,16 @@
 import json
 import os
 
-from irc.bot import SingleServerIRCBot
 import requests
+from irc.bot import SingleServerIRCBot
 
 import modules.CommandParser as CommandParser
 import modules.config as config
-import modules.slots as slots
-import modules.SqliteReadDB as SqliteReadDB
-import modules.SqliteUpdateDB as SqliteUpdateDB
-from Games.DiceGame import DiceGame
+from Commands.DebugCommand import DebugCommand
+from Commands.DiceGame import DiceGame
+from Commands.JoinCommand import JoinCommand
+from Commands.SlotsGame import SlotsGame
+from Database.SQLiteConnector import SQLiteConnector
 from modules.Data import Data
 from modules.thread_cleaner import ThreadCleaner
 
@@ -36,6 +37,7 @@ class TwitchBot(SingleServerIRCBot):
         self.channel = '#' + chan
         self.dice_games = []
         self.settings = settings
+        self.database = SQLiteConnector()
         # Get the channel id for v5 API calls if wanted
         url = 'https://api.twitch.tv/helix/users?login={channel}'.format(channel=chan)
         headers = {'Client-ID': client_id, 'Accept': 'application/vnd.twitchtv.v5+json'}
@@ -84,72 +86,39 @@ class TwitchBot(SingleServerIRCBot):
     def do_command(self, e, cmd):
         c = self.connection
         data = Data(e)
-        user_id = data.userid
         username = data.username
         if cmd[0] == 'debug':
-            # If the debug command sender is the broadcaster or a channel mod
-            if data.is_broadcaster or data.is_mod:
-                print(f'Recieved Debug command from {username}... Printing tags')
-                c.privmsg(self.channel, f"{username} Printed tags to the console of the chatbot. "
-                                        "I hope you were asked to run this "
-                                        "or you wanted to debug something")
-                print(f"User Tags:\n{e.tags}\n"
-                      f"Recieved Message: {e.arguments[0]}\n"
-                      f"Connected Channel: {self.channel}\n"
-                      f"Channel ID: {self.channel_id}\n")
-            else:
-                c.privmsg(self.channel, f"{username} You are not authorized to use the debug command, {username}. "
-                                        "Please ask the streamer for permission if you believe this is "
-                                        "an error.")
+            debug_command = DebugCommand(data, self.connection, self.channel, self.channel_id, e)
+            debug_command.start()
+            # # If the debug command sender is the broadcaster or a channel mod
+            # if data.is_broadcaster or data.is_mod:
+            #     print(f'Recieved Debug command from {username}... Printing tags')
+            #     c.privmsg(self.channel, f"{username} Printed tags to the console of the chatbot. "
+            #                             "I hope you were asked to run this "
+            #                             "or you wanted to debug something")
+            #     print(f"User Tags:\n{e.tags}\n"
+            #           f"Recieved Message: {e.arguments[0]}\n"
+            #           f"Connected Channel: {self.channel}\n"
+            #           f"Channel ID: {self.channel_id}\n")
+            # else:
+            #     c.privmsg(self.channel, f"{username} You are not authorized to use the debug command, {username}. "
+            #                             "Please ask the streamer for permission if you believe this is "
+            #                             "an error.")
         # if it isn't the debug command, try some other commands.
         else:
             cmd_message = e.arguments[0][1:]
             print(f'Recieved Command "{cmd_message}" from {username}')
+            
             # If the command is the !join command
             if cmd[0] == 'join':
-                cmd = cmd[0]
-                game = cmd
-                # Check cooldown and load necessary settings
-                currency = settings['commands']['join']['join_reward']
-                cooldown = settings['commands']['join']['join_cooldown']
-                checkcooldown = SqliteReadDB.read_cooldown(user_id, game)
-                # If they are off cooldown, let the command execute as planned
-                if checkcooldown is False:
-                    SqliteUpdateDB.add_currency(user_id, currency)
-                    SqliteUpdateDB.add_cooldown(user_id, game, cooldown)
-                    reward = settings['commands']['join']['join_reward']
-                    joinmessage = settings['commands'][cmd]['success_message'].format(username=username, reward=reward,
-                                                                                      command=cmd)
-                    c.privmsg(self.channel, joinmessage)
-                # If the cooldown comes back as a number (in seconds)
-                elif isinstance(checkcooldown, int):
-                    # Convert it to minutes and seconds and message the user using the cooldown message from the config
-                    minutes, seconds = divmod(checkcooldown, 60)
-                    cooldownmessage = settings['commands'][cmd]['cooldown_message'].format(username=username,
-                                                                                           minutes=minutes,
-                                                                                           seconds=seconds)
-                    c.privmsg(self.channel, cooldownmessage)
+                join_command = JoinCommand(data, self.connection, self.channel, self.settings)
+                join_command.start()
+                
             # If the command is !slots
             elif cmd[0] == 'slots':
-                cmd = cmd[0]
-                # Execute the slots
-                result = slots.slots_execute(e, settings, cmd, data)
-                # if the result is a number, they are on cooldown so reply with the cooldown message
-                if isinstance(result, int):
-                    minutes, seconds = divmod(result, 60)
-                    message = settings['commands'][cmd]['cooldown_message'].format(username=username,
-                                                                                   minutes=minutes,
-                                                                                   seconds=seconds)
-                    c.privmsg(self.channel, message)
-                # If the result has 2 items, that means it was successful. Print the roll and the result
-                elif len(result) == 2:
-                    message = result[0] + result[1]
-                    c.privmsg(self.channel, message)
-                # If all else fails and only one result comes back, they don't have enough money to use the slots.
-                else:
-                    message = result
-                    c.privmsg(self.channel, message)
-
+                slots_game = SlotsGame(data, self.connection, self.channel, self.settings)
+                slots_game.start()
+                
             # If the command is !dice
             elif cmd[0] == 'dice':
                 # Make sure we have all arguments for the cmd.

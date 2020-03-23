@@ -1,15 +1,15 @@
 # Author: Colin Andress
 # Project: Simple Chatbot
 # Filename: CommandParser.py
-# Purpose: Parses commands from the config file and formats the response. Called from chatbot.py
-import modules.SqliteReadDB as SqliteReadDB
-import modules.Data as Data
+# Purpose: Parses commands from the config file and formats the response.
+from Database.SQLiteConnector import SQLiteConnector
 
 
-def parse_command(e, settings, cmd):
-    username = Data.username(e)
-    user_id = Data.user_id(e)
-    currency = SqliteReadDB.read_currency(user_id)
+def parse_command(e, settings, cmd, data):
+    database = SQLiteConnector()
+    username = data.username
+    user_id = data.userid
+    currency = database.get_currency(user_id)
     for i in settings['commands']:
         if i == cmd:
             response = settings['commands'][cmd]['response'].format(username=username, currency=currency, command=cmd)

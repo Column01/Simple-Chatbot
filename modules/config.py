@@ -3,7 +3,7 @@
 # Filename: config.py
 # Purpose: Generates a template config. Called from chatbot.py when no config exists and exits upon completion
 import json
-import modules.Data as Data
+
 
 # Config Template
 template = '{"bot_settings":{"username":"Bot Username","host":"irc.chat.twitch.tv","port":6667,"token":' \
@@ -32,4 +32,4 @@ def generate_config():
         json.dump(config_file, s, indent=4)
     print("Config file was not found. Generated template config and will exit the chatbot. "
           "\nEditing of the file is required to use the bot so please see the readme for instructions.")
-    Data.yeet(SystemExit)
+    exit(0)

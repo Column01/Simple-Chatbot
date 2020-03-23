@@ -5,7 +5,7 @@
 import json
 
 class ConfigTemplate:
-    
+
     def __init__(self):
         self.template = {
             "bot_settings": {
@@ -64,7 +64,6 @@ class ConfigTemplate:
             }
         }
         
-
     # Generates the config file from the template.
     def generate_config(self):
         with open('config.json', 'w+') as s:

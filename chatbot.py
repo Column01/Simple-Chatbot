@@ -49,8 +49,8 @@ class TwitchBot(SingleServerIRCBot):
         t_cleaner.start()
         # Create IRC bot connection
         server = 'irc.chat.twitch.tv'
-        port = 6667
-        print('Connecting to {server} on port {port}...'.format(server=server, port=port))
+        port = self.settings["bot_settings"]["port"]
+        print(f'Connecting to {server} on port {port}...')
         SingleServerIRCBot.__init__(self, [(server, port, token)], username, username)
 
     def on_welcome(self, c, e):
@@ -85,7 +85,6 @@ class TwitchBot(SingleServerIRCBot):
         return
 
     def do_command(self, e, cmd):
-        c = self.connection
         data = Data(e)
         username = data.username
         if cmd[0] == 'debug':
@@ -136,7 +135,7 @@ class TwitchBot(SingleServerIRCBot):
                     tmp.append(i + ' ')
                 cmd = ''.join(tmp)[:-1]
                 response = CommandParser.parse_command(e, settings, cmd, data)
-                c.privmsg(self.channel, response)
+                self.connection.privmsg(self.channel, response)
         
 
 def main():

@@ -83,7 +83,6 @@ class DiceGame(Thread):
             return
 
     """Checks various things to see if the game can progress
-    
     Returns:
         Boolean -- If the game is valid or not
     """    
@@ -114,7 +113,6 @@ class DiceGame(Thread):
             return True
 
     """Checks if player two is present in the chat
-    
     Returns:
         Boolean -- Whether or not player two is in the chat
     """    
@@ -135,7 +133,6 @@ class DiceGame(Thread):
         return False
 
     """Checks whether the user is challenging themself to a dice battle.
-    
     Returns:
         Boolean -- Whether or not they challenged themselves
     """    

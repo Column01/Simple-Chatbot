@@ -5,6 +5,7 @@
 from Database.SQLiteConnector import SQLiteConnector
 
 class Data:
+    
     def __init__(self, e):
         self.username = None
         self.userid = None
@@ -13,13 +14,11 @@ class Data:
         
         self.set_information(e)
 
-
     def set_information(self, e):
         self.set_username(e)
         self.set_user_id(e)
         self.set_is_broadcaster(e)
         self.set_is_mod(e)
-
 
     def set_username(self, e):
         for i in range(len(e.tags)):
@@ -28,12 +27,10 @@ class Data:
             else:
                 pass
 
-
     def set_user_id(self, e):
         for i in range(len(e.tags)):
             if e.tags[i]['key'] == 'user-id':
                 self.userid = e.tags[i]['value']
-
 
     def set_is_broadcaster(self, e):
         for i in range(len(e.tags)):
@@ -43,7 +40,6 @@ class Data:
                 else:
                     self.is_broadcaster = False
 
-
     def set_is_mod(self, e):
         for i in range(len(e.tags)):
             if e.tags[i]['key'] == 'mod':
@@ -51,7 +47,6 @@ class Data:
                     self.is_mod = True
                 else:
                     self.is_mod = False
-
 
     def check_valid_username(self):
         database = SQLiteConnector()

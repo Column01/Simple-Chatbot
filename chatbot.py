@@ -9,7 +9,7 @@ import requests
 from irc.bot import SingleServerIRCBot
 
 import modules.CommandParser as CommandParser
-import modules.config as config
+from modules.config import ConfigTemplate
 from Commands.DebugCommand import DebugCommand
 from Commands.DiceGame import DiceGame
 from Commands.JoinCommand import JoinCommand
@@ -26,6 +26,7 @@ try:
         settings = json.load(f)
         f.close()
 except FileNotFoundError:
+    config = ConfigTemplate()
     config.generate_config()
 
 
@@ -39,7 +40,7 @@ class TwitchBot(SingleServerIRCBot):
         self.settings = settings
         self.database = SQLiteConnector()
         # Get the channel id for v5 API calls if wanted
-        url = 'https://api.twitch.tv/helix/users?login={channel}'.format(channel=chan)
+        url = f'https://api.twitch.tv/helix/users?login={chan}'
         headers = {'Client-ID': client_id, 'Accept': 'application/vnd.twitchtv.v5+json'}
         r = requests.get(url, headers=headers).json()
         self.channel_id = r['data'][0]['id']
@@ -53,7 +54,7 @@ class TwitchBot(SingleServerIRCBot):
         SingleServerIRCBot.__init__(self, [(server, port, token)], username, username)
 
     def on_welcome(self, c, e):
-        print('Joining {channel}'.format(channel=self.channel))
+        print(f'Joining {self.channel}')
         # Making general requests from twitch so the bot can function
         c.cap('REQ', ':twitch.tv/membership')
         c.cap('REQ', ':twitch.tv/tags')
@@ -80,7 +81,7 @@ class TwitchBot(SingleServerIRCBot):
         else:
             message = e.arguments[0]
             username = data.username
-            print('{username}: {message}'.format(username=username, message=message))
+            print(f'{username}: {message}')
         return
 
     def do_command(self, e, cmd):
@@ -90,20 +91,6 @@ class TwitchBot(SingleServerIRCBot):
         if cmd[0] == 'debug':
             debug_command = DebugCommand(data, self.connection, self.channel, self.channel_id, e)
             debug_command.start()
-            # # If the debug command sender is the broadcaster or a channel mod
-            # if data.is_broadcaster or data.is_mod:
-            #     print(f'Recieved Debug command from {username}... Printing tags')
-            #     c.privmsg(self.channel, f"{username} Printed tags to the console of the chatbot. "
-            #                             "I hope you were asked to run this "
-            #                             "or you wanted to debug something")
-            #     print(f"User Tags:\n{e.tags}\n"
-            #           f"Recieved Message: {e.arguments[0]}\n"
-            #           f"Connected Channel: {self.channel}\n"
-            #           f"Channel ID: {self.channel_id}\n")
-            # else:
-            #     c.privmsg(self.channel, f"{username} You are not authorized to use the debug command, {username}. "
-            #                             "Please ask the streamer for permission if you believe this is "
-            #                             "an error.")
         # if it isn't the debug command, try some other commands.
         else:
             cmd_message = e.arguments[0][1:]

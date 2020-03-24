@@ -2,6 +2,7 @@ from threading import Thread
 from timeit import default_timer as timer
 import requests
 import random
+import logging
 
 from Database.SQLiteConnector import SQLiteConnector
 
@@ -24,7 +25,8 @@ class DiceGame(Thread):
         self.player_two = None
         self.database = SQLiteConnector()
         self.cooldown = self.settings["commands"]["dice"]["cooldown"]
-        print(f"Starting a new dice game thread for {self.player_one.username} versus {self.player_to_wait_for}")
+        self.logger = logging.getLogger("chatbot")
+        self.logger.info(f"Started a new dice game thread for {self.player_one.username} versus {self.player_to_wait_for}")
 
     def run(self):
         self.start_game()
@@ -83,7 +85,6 @@ class DiceGame(Thread):
             return
 
     """Checks various things to see if the game can progress
-    
     Returns:
         Boolean -- If the game is valid or not
     """    
@@ -114,7 +115,6 @@ class DiceGame(Thread):
             return True
 
     """Checks if player two is present in the chat
-    
     Returns:
         Boolean -- Whether or not player two is in the chat
     """    
@@ -135,7 +135,6 @@ class DiceGame(Thread):
         return False
 
     """Checks whether the user is challenging themself to a dice battle.
-    
     Returns:
         Boolean -- Whether or not they challenged themselves
     """    

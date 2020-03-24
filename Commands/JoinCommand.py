@@ -1,4 +1,5 @@
 from threading import Thread
+import logging
 
 from Database.SQLiteConnector import SQLiteConnector
 
@@ -16,6 +17,8 @@ class JoinCommand(Thread):
         self.success_message = settings['commands']['join']['success_message']
         self.cooldown_message = settings['commands']['join']['cooldown_message']
         self.database = SQLiteConnector()
+        self.logger = logging.getLogger("chatbot")
+        self.logger.info(f"Started a new Join command thread for {self.user.username}")
 
     def run(self):
         user_cooldown = self.database.get_cooldown(self.user.userid, "join")

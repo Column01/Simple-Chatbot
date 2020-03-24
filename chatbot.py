@@ -4,6 +4,9 @@
 # Purpose: Main twitch chatbot script.
 import json
 import os
+import logging
+import sys
+from colored import fg, bg, attr
 
 import requests
 from irc.bot import SingleServerIRCBot
@@ -17,6 +20,7 @@ from Commands.SlotsGame import SlotsGame
 from Database.SQLiteConnector import SQLiteConnector
 from modules.Data import Data
 from modules.thread_cleaner import ThreadCleaner
+
 
 # Load the config file and check if it exists. If it doesn't, generate a template config and quit.
 configFile = 'config.json'
@@ -32,7 +36,9 @@ except FileNotFoundError:
 
 class TwitchBot(SingleServerIRCBot):
     def __init__(self, username, client_id, token, chan, settings):
-        print('Thanks for using the chatbot! Use Ctrl+C to exit safely.')
+        self.reset_color = attr("reset")
+        print(fg("#00ff00") + "Thanks for using the chatbot! Use Ctrl+C to exit safely." + self.reset_color)
+        self.logger = self.init_logger()
         self.client_id = client_id
         self.token = token
         self.channel = '#' + chan
@@ -49,12 +55,12 @@ class TwitchBot(SingleServerIRCBot):
         t_cleaner.start()
         # Create IRC bot connection
         server = 'irc.chat.twitch.tv'
-        port = 6667
-        print('Connecting to {server} on port {port}...'.format(server=server, port=port))
+        port = self.settings["bot_settings"]["port"]
+        self.logger.info(f'Connecting to {server} on port {port}')
         SingleServerIRCBot.__init__(self, [(server, port, token)], username, username)
 
     def on_welcome(self, c, e):
-        print(f'Joining {self.channel}')
+        self.logger.info(f'Joining {self.channel}')
         # Making general requests from twitch so the bot can function
         c.cap('REQ', ':twitch.tv/membership')
         c.cap('REQ', ':twitch.tv/tags')
@@ -64,7 +70,7 @@ class TwitchBot(SingleServerIRCBot):
     # if we get a notice that a message we sent was invalid, print the notice
     def on_pubnotice(self, c, e):
         if e.arguments[0]:
-            print(e.arguments[0])
+            print(fg("#ff0000") + f"PUBNOTICE FROM TWITCH:{self.reset_color} {e.arguments[0]}")
 
     # if we get a whisper, treat it like a normal message
     def on_whisper(self, c, e):
@@ -81,20 +87,21 @@ class TwitchBot(SingleServerIRCBot):
         else:
             message = e.arguments[0]
             username = data.username
-            print(f'{username}: {message}')
-        return
+            user_color = data.user_color
+            print(fg(user_color) + f'[{username}]' + self.reset_color + f': {message}')
+            if self.settings["bot_settings"].get("log_chat") is not None:
+                if self.settings["bot_settings"]["log_chat"] == 1:
+                    self.logger.info(f'CHAT MESSAGE: {username} said {message}')
 
     def do_command(self, e, cmd):
-        c = self.connection
         data = Data(e)
-        username = data.username
         if cmd[0] == 'debug':
             debug_command = DebugCommand(data, self.connection, self.channel, self.channel_id, e)
             debug_command.start()
         # if it isn't the debug command, try some other commands.
         else:
             cmd_message = e.arguments[0][1:]
-            print(f'Recieved Command "{cmd_message}" from {username}')
+            self.logger.info(f'Recieved Command "{cmd_message}" from {data.username}')
             
             # If the command is the !join command
             if cmd[0] == 'join':
@@ -136,8 +143,18 @@ class TwitchBot(SingleServerIRCBot):
                     tmp.append(i + ' ')
                 cmd = ''.join(tmp)[:-1]
                 response = CommandParser.parse_command(e, settings, cmd, data)
-                c.privmsg(self.channel, response)
-        
+                self.connection.privmsg(self.channel, response)
+                
+    def init_logger(self):
+        logger = logging.getLogger("chatbot")
+        handler = logging.FileHandler(filename="chatbot_log.log", encoding="utf-8", mode="a")
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+        logger.propagate = False
+        return logger
+
 
 def main():
     # Load some config settings and start the bot
@@ -155,4 +172,6 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         print("Received Keyboard Interrupt, closing chatbot and cleaning up...")
-        exit(0)
+        logger = logging.getLogger("chatbot")
+        logger.info("Recieved keyboard interrupt. Script closing now\n")
+        os._exit(0)

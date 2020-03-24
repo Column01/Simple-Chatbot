@@ -88,9 +88,9 @@ class SQLiteConnector:
             self.logger.info(f'Adding {username} to database...')
             self.add_user(userid, username, 0)
             return
-        elif username == usernamedb[0]:
+        elif username == usernamedb:
             return
-        elif username != usernamedb[0]:
+        elif username != usernamedb:
             self.logger.info(f'{username} has mismatched usernames. Updating.')
             self.cursor.execute("UPDATE users SET username = ? WHERE userid = ?", (username, userid))
             self.conn.commit()

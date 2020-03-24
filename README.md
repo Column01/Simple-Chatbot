@@ -2,11 +2,12 @@
 A chatbot written in Python for Twitch chat. Keep your viewers engaged with an interactive chatbot where they can earn currency and gamble for fun! Make fun little command responses that are unique to you!
 
 ## Dependencies
-- [Python 3.4+](https://www.python.org/downloads/)
+- [Python 3.6+](https://www.python.org/downloads/)
 - [Requests Library](https://pypi.org/project/requests/)
 - [IRC Library](https://pypi.org/project/irc/)
+- [Colored Library](https://pypi.org/project/colored/)
 
-(Command to get dependencies: `pip install requests irc`)
+(Command to get dependencies: `pip install requirements.txt`)
 
 ## Setup
 First off you need to run the main script to generate a template config so you can fill in the info needed (see **"How to Run"** below to learn how to run the bot). You will need your own bot account and you will need to [register it as a twitch application](https://dev.twitch.tv/console). Once registered, you can get the client ID there and add it in the config file. Then you need to generate an OAuth token using [this tool](https://twitchapps.com/tmi/) while logged into the bot account (**NOT** the streamer account).

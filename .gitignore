@@ -1,6 +1,7 @@
 .idea
 *.json
 *.db
+*.log
 venv
 **/__pycache__/
 chatbot.code-workspace

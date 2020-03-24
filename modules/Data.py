@@ -11,38 +11,33 @@ class Data:
         self.userid = None
         self.is_broadcaster = False
         self.is_mod = False
+        self.user_color = None
         
         self.set_information(e)
 
     def set_information(self, e):
-        self.set_username(e)
-        self.set_user_id(e)
-        self.set_is_broadcaster(e)
-        self.set_is_mod(e)
-
-    def set_username(self, e):
         for i in range(len(e.tags)):
+            # Set their username
             if e.tags[i]['key'] == 'display-name':
                 self.username = e.tags[i]['value']
-            else:
-                pass
-
-    def set_user_id(self, e):
-        for i in range(len(e.tags)):
-            if e.tags[i]['key'] == 'user-id':
+                
+            # Set their userid
+            elif e.tags[i]['key'] == 'user-id':
                 self.userid = e.tags[i]['value']
-
-    def set_is_broadcaster(self, e):
-        for i in range(len(e.tags)):
-            if e.tags[i]['key'] == 'badges':
+                
+            # Set their user color
+            elif e.tags[i]['key'] == "color":
+                self.user_color = e.tags[i]['value']
+                
+            # Set if they are a broadcaster
+            elif e.tags[i]['key'] == 'badges':
                 if e.tags[i]['value'] == 'broadcaster/1':
                     self.is_broadcaster = True
                 else:
                     self.is_broadcaster = False
-
-    def set_is_mod(self, e):
-        for i in range(len(e.tags)):
-            if e.tags[i]['key'] == 'mod':
+                    
+            # Set if they are a mod
+            elif e.tags[i]['key'] == 'mod':
                 if e.tags[i]['value'] == '1':
                     self.is_mod = True
                 else:

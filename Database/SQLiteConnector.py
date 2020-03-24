@@ -1,10 +1,12 @@
 import sqlite3
 import modules.helpers as helpers
 import time
+import logging
 
 class SQLiteConnector:
     
     def __init__(self):
+        self.logger = logging.getLogger("chatbot")
         self.conn = sqlite3.connect('users.db', check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.cursor.execute("CREATE TABLE IF NOT EXISTS users(userid INT, username TEXT, currency INT, _join INT, _slots INT, _dice INT)")
@@ -19,7 +21,7 @@ class SQLiteConnector:
                     pass
             except IndexError:
                 self.cursor.execute("ALTER TABLE users ADD COLUMN " + item + " INT")
-                print(f"Added new game table {item}")
+                self.logger.info(f"Added new game table {item}")
             self.conn.commit()
 
     """Gets the username of the specified userID from the database
@@ -31,7 +33,9 @@ class SQLiteConnector:
     def get_username(self, userid):
         self.cursor.execute("SELECT username FROM users WHERE userid = ?", (userid,))
         user = self.cursor.fetchone()
-        return user
+        if user is not None:
+            if helpers.test_list_item(user, 0):
+                return user[0]
 
     """Gets the cooldown for the specified userid and game
     Parameters:
@@ -81,16 +85,16 @@ class SQLiteConnector:
     def update_username(self, userid, username):
         usernamedb = self.get_username(userid)
         if usernamedb is None:
-            print('Adding ' + username + ' to database...')
+            self.logger.info(f'Adding {username} to database...')
             self.add_user(userid, username, 0)
             return
         elif username == usernamedb[0]:
             return
         elif username != usernamedb[0]:
-            print(username + ' has mismatched usernames. Updating.')
+            self.logger.info(f'{username} has mismatched usernames. Updating.')
             self.cursor.execute("UPDATE users SET username = ? WHERE userid = ?", (username, userid))
             self.conn.commit()
-            print("Updated username into database")
+            self.logger.info("Updated username into database")
             return
     
     """Adds the user to the database
@@ -115,7 +119,8 @@ class SQLiteConnector:
         new_currency = amount + currency_db
         self.cursor.execute("UPDATE users SET currency = ? WHERE userid = ?", (new_currency, userid))
         self.conn.commit()
-        print(f"Added {amount} currency to userID: {userid}")
+        username = self.get_username(userid)
+        self.logger.info(f"Added {amount} currency to {username}")
         return
     
     """Sets the user's cooldown for the specified game
@@ -128,7 +133,8 @@ class SQLiteConnector:
         new_cooldown = int(time.time()) + cooldown
         self.cursor.execute("UPDATE users SET _"+game+" = ? WHERE userid = ?", (new_cooldown, userid,))
         self.conn.commit()
-        print(f"Put {userid} on cooldown for {game} for {cooldown} seconds")
+        username = self.get_username(userid)
+        self.logger.info(f"Put {username} on cooldown for {game} for {cooldown} seconds")
         return
     
     """Remove the specified amount of currency from the user
@@ -144,7 +150,8 @@ class SQLiteConnector:
             new_currency = currency_db - amount
             self.cursor.execute("UPDATE users SET currency = ? WHERE userid = ?", (new_currency, userid,))
             self.conn.commit()
-            print(f"Removed {amount} currency from userID: {userid}")
+            username = self.get_username(userid)
+            self.logger.info(f"Removed {amount} currency from {username}")
             return True
         else:
             return False

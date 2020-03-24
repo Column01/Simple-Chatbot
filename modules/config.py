@@ -15,55 +15,55 @@ class ConfigTemplate:
                 "token": "Bot oauth token",
                 "channel": "Streamer name",
                 "client_id": "Client ID of bot account",
-                "poll_rate": 600
+                "log_chat": 0
             },
             "commands": {
                 "coins": {
-                "response": "{username} has {currency} coins to spend, Go play some games :P"
+                    "response": "{username} has {currency} coins to spend, Go play some games :P"
                 },
                 "discord":{
-                "response": "Join my discord here: https://discord.gg/5J49NNT Kappa"
+                    "response": "Join my discord here: https://discord.gg/5J49NNT Kappa"
                 },
                 "nani": {
-                "response": "Nani the fuck?"
+                    "response": "Nani the fuck?"
                 },
                 "thot": {
-                "response": "Begone ... THOT!!!!"
+                    "response": "Begone ... THOT!!!!"
                 },
                 "donate": {
-                "response": "You can donate to me at this link: https://streamlabs.com/column01"
+                    "response": "You can donate to me at this link: https://streamlabs.com/column01"
                 },
                 "join": {
-                "cooldown_message": "You are still on cooldown for {minutes} minutes and {seconds} seconds, {username}. Try again later.",
-                "success_message": "{username} typed !{command} and recieved {reward} coins.",
-                "join_reward": 5000,
-                "join_cooldown": 3600
+                    "cooldown_message": "You are still on cooldown for {minutes} minutes and {seconds} seconds, {username}. Try again later.",
+                    "success_message": "{username} typed !{command} and recieved {reward} coins.",
+                    "join_reward": 5000,
+                    "join_cooldown": 3600
                 },
                 "slots": {
-                "cooldown_message": "You are still on cooldown for {minutes} minutes and {seconds} seconds, {username}. Try again later.",
-                "cooldown": 600,
-                "double_reward": 2000,
-                "triple_reward": 10000,
-                "jackpot_reward": 25000,
-                "cost": 100,
-                "reel": [
-                    "Kappa",
-                    "PogChamp",
-                    "LUL",
-                    "BlessRNG",
-                    "KappaPride",
-                    "DoritosChip",
-                    "TheIlluminati"
-                ]
+                    "cooldown_message": "You are still on cooldown for {minutes} minutes and {seconds} seconds, {username}. Try again later.",
+                    "cooldown": 600,
+                    "double_reward": 2000,
+                    "triple_reward": 10000,
+                    "jackpot_reward": 25000,
+                    "cost": 100,
+                    "reel": [
+                        "Kappa",
+                        "PogChamp",
+                        "LUL",
+                        "BlessRNG",
+                        "KappaPride",
+                        "DoritosChip",
+                        "TheIlluminati"
+                    ]
                 },
                 "dice": {
-                "min_num": 1,
-                "max_num": 6,
-                "cooldown": 300
+                    "min_num": 1,
+                    "max_num": 6,
+                    "cooldown": 300
                 }
             }
         }
-        
+
     # Generates the config file from the template.
     def generate_config(self):
         with open('config.json', 'w+') as s:

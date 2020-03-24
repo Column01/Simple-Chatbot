@@ -2,6 +2,7 @@ from threading import Thread
 from timeit import default_timer as timer
 import requests
 import random
+import logging
 
 from Database.SQLiteConnector import SQLiteConnector
 
@@ -24,7 +25,8 @@ class DiceGame(Thread):
         self.player_two = None
         self.database = SQLiteConnector()
         self.cooldown = self.settings["commands"]["dice"]["cooldown"]
-        print(f"Starting a new dice game thread for {self.player_one.username} versus {self.player_to_wait_for}")
+        self.logger = logging.getLogger("chatbot")
+        self.logger.info(f"Started a new dice game thread for {self.player_one.username} versus {self.player_to_wait_for}")
 
     def run(self):
         self.start_game()

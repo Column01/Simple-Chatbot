@@ -1,5 +1,6 @@
 from threading import Thread
 import random
+import logging
 
 from Database.SQLiteConnector import SQLiteConnector
 
@@ -18,6 +19,8 @@ class SlotsGame(Thread):
         self.triple_reward = settings["commands"]["slots"]["triple_reward"]
         self.double_reward = settings["commands"]["slots"]["double_reward"]
         self.database = SQLiteConnector()
+        self.logger = logging.getLogger("chatbot")
+        self.logger.info(f"Started a new slots thread for {self.user.username}")
         
     def run(self):
         user_cooldown = self.database.get_cooldown(self.user.userid, "slots")
@@ -57,10 +60,13 @@ class SlotsGame(Thread):
                 # If it's a Loss
                 elif slots[0] != slots[1] and slots[0] != slots[2] and slots[2] != slots[1]:
                     self.send_message(f"I'm sorry, {self.user.username}, but you lost!")
+                    
+                return
             # Not enough currency to play    
             else:
                 self.send_message(f"You have insufficient currency, {self.user.username}. The slots requires 100 coins Run !coins to see "
                                    "your balance. You can also run !join to gain some to kick start your earning!")
+                return
 
         # If they are on cooldown, message them the cooldown
         else:

@@ -1,8 +1,14 @@
-from threading import Thread
-import random
+# Author: Colin Andress
+# Project: Simple Chatbot
+# Filename: SlotsGame.py
+# Description: The class to execute the slots game
+
 import logging
+import random
+from threading import Thread
 
 from Database.SQLiteConnector import SQLiteConnector
+
 
 class SlotsGame(Thread):
     

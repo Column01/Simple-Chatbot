@@ -1,7 +1,14 @@
-import sqlite3
-import modules.helpers as helpers
-import time
+# Author: Colin Andress
+# Project: Simple Chatbot
+# Filename: SQLiteConnector.py
+# Description: SQLite database connector class
+
 import logging
+import sqlite3
+import time
+
+import modules.helpers as helpers
+
 
 class SQLiteConnector:
     
@@ -9,11 +16,11 @@ class SQLiteConnector:
         self.logger = logging.getLogger("chatbot")
         self.conn = sqlite3.connect('users.db', check_same_thread=False)
         self.cursor = self.conn.cursor()
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS users(userid INT, username TEXT, currency INT, _join INT, _slots INT, _dice INT)")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS users(userid INT, username TEXT, currency INT, _join INT, _slots INT, _dice INT, color TEXT)")
         self.conn.commit()
         self.cursor.execute("PRAGMA table_info('users')")
         databaselist = self.cursor.fetchall()
-        columnlist = ["userid", "username", "currency", "_join", "_slots", "_dice"]
+        columnlist = ["userid", "username", "currency", "_join", "_slots", "_dice", "color"]
         for item in columnlist:
             i = columnlist.index(item)
             try:
@@ -45,7 +52,7 @@ class SQLiteConnector:
         Integer -- The cooldown in seconds
     """    
     def get_cooldown(self, userid, game):
-        self.cursor.execute("SELECT _"+game+",userid FROM users WHERE userid = ?", (userid,))
+        self.cursor.execute("SELECT _"+game+", userid FROM users WHERE userid = ?", (userid,))
         cooldown_fetch = self.cursor.fetchone()
         current_time = int(time.time())
         if cooldown_fetch is not None:
@@ -69,7 +76,7 @@ class SQLiteConnector:
         Integer -- The amount of currency the user has
     """    
     def get_currency(self, userid):
-        self.cursor.execute("SELECT currency,userid FROM users where userid = ?", (userid,))
+        self.cursor.execute("SELECT currency, userid FROM users WHERE userid = ?", (userid,))
         currencyfetch = self.cursor.fetchone()
         if currencyfetch is not None:
             currency = currencyfetch[0]
@@ -131,7 +138,7 @@ class SQLiteConnector:
     """
     def set_cooldown(self, userid, game, cooldown):
         new_cooldown = int(time.time()) + cooldown
-        self.cursor.execute("UPDATE users SET _"+game+" = ? WHERE userid = ?", (new_cooldown, userid,))
+        self.cursor.execute("UPDATE users SET _"+game+" = ? WHERE userid = ?", (new_cooldown, userid))
         self.conn.commit()
         username = self.get_username(userid)
         self.logger.info(f"Put {username} on cooldown for {game} for {cooldown} seconds")
@@ -148,7 +155,7 @@ class SQLiteConnector:
         currency_db = self.get_currency(userid)
         if self.has_enough_currency(userid, amount):
             new_currency = currency_db - amount
-            self.cursor.execute("UPDATE users SET currency = ? WHERE userid = ?", (new_currency, userid,))
+            self.cursor.execute("UPDATE users SET currency = ? WHERE userid = ?", (new_currency, userid))
             self.conn.commit()
             username = self.get_username(userid)
             self.logger.info(f"Removed {amount} currency from {username}")
@@ -169,3 +176,32 @@ class SQLiteConnector:
             return True
         else:
             return False
+    
+    """Get the user's chat color
+    Parameters:
+        userid -- The userID of the user to get the color for
+    
+    Returns:
+        String -- The Hex color code value for the user
+        
+        NoneType -- If the color is not set in the database
+    """    
+    def get_user_color(self, userid):
+        self.cursor.execute("SELECT color, userid FROM users WHERE userid = ?", (userid,))
+        color = self.cursor.fetchone()
+        if helpers.test_list_item(color, 0):
+            color = color[0]
+            if color is not None:
+                return color
+        return None
+    
+    """Sets the user's color in the database
+    Parameters:
+        userid -- The userID of the user you want to set the color for
+        hex_value - The hex color code as a string
+    """    
+    def set_user_color(self, userid, hex_value):
+        self.cursor.execute("UPDATE users SET color = ? WHERE userid = ?", (hex_value, userid))
+        self.conn.commit()
+        username = self.get_username(userid)
+        self.logger.info(f"Set {username}'s color to {hex_value}")

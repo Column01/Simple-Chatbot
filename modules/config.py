@@ -1,7 +1,8 @@
 # Author: Colin Andress
 # Project: Simple Chatbot
 # Filename: config.py
-# Purpose: Generates a template config. Called from chatbot.py when no config exists and exits upon completion
+# Purpose: Generates a template config. Called when no config exists and exits upon completion
+
 import json
 
 class ConfigTemplate:

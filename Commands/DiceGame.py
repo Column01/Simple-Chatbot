@@ -1,10 +1,17 @@
+# Author: Colin Andress
+# Project: Simple Chatbot
+# Filename: DiceGame.py
+# Description: The class to execute the dice game
+
+import logging
+import random
 from threading import Thread
 from timeit import default_timer as timer
+
 import requests
-import random
-import logging
 
 from Database.SQLiteConnector import SQLiteConnector
+
 
 class DiceGame(Thread):
 

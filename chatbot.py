@@ -1,26 +1,26 @@
 # Author: Colin Andress
 # Project: Simple Chatbot
 # Filename: chatbot.py
-# Purpose: Main twitch chatbot script.
+# Purpose: Main twitch chatbot script. Initializes all functionality of the chatbot
+
 import json
-import os
 import logging
+import os
 import sys
-from colored import fg, bg, attr
 
 import requests
+from colored import attr, bg, fg
 from irc.bot import SingleServerIRCBot
 
 import modules.CommandParser as CommandParser
-from modules.config import ConfigTemplate
 from Commands.DebugCommand import DebugCommand
 from Commands.DiceGame import DiceGame
 from Commands.JoinCommand import JoinCommand
 from Commands.SlotsGame import SlotsGame
 from Database.SQLiteConnector import SQLiteConnector
+from modules.config import ConfigTemplate
 from modules.Data import Data
 from modules.thread_cleaner import ThreadCleaner
-
 
 # Load the config file and check if it exists. If it doesn't, generate a template config and quit.
 configFile = 'config.json'

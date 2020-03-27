@@ -1,5 +1,11 @@
-from threading import Thread
+# Author: Colin Andress
+# Project: Simple Chatbot
+# Filename: DebugCommand.py
+# Description: The class to execute the debug command
+
 import logging
+from threading import Thread
+
 
 class DebugCommand(Thread):
     

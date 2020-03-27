@@ -1,7 +1,13 @@
-from threading import Thread
+# Author: Colin Andress
+# Project: Simple Chatbot
+# Filename: JoinCommand.py
+# Description: The class to execute the join command
+
 import logging
+from threading import Thread
 
 from Database.SQLiteConnector import SQLiteConnector
+
 
 class JoinCommand(Thread):
     

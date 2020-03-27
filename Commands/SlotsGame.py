@@ -1,8 +1,14 @@
-from threading import Thread
-import random
+# Author: Colin Andress
+# Project: Simple Chatbot
+# Filename: SlotsGame.py
+# Description: The class to execute the slots game
+
 import logging
+import random
+from threading import Thread
 
 from Database.SQLiteConnector import SQLiteConnector
+
 
 class SlotsGame(Thread):
     
@@ -28,8 +34,9 @@ class SlotsGame(Thread):
         if user_cooldown == 0:
             # If they have enough currency to roll the slots
             if self.database.has_enough_currency(self.user.userid, self.cost):
-                # Put the user on cooldown and roll the slots
+                # Put the user on cooldown, take their money and roll the slots
                 self.database.set_cooldown(self.user.userid, "slots", self.cooldown)
+                self.database.remove_currency(self.user.userid, self.cost)
                 slots = self.roll_slots()
                 self.send_message(f'{self.user.username} typed !slots and rolled for {self.cost} coins... {slots[0]} ... {slots[1]} ... {slots[2]} ...')
                 # If it's a Jackpot

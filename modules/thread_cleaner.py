@@ -1,5 +1,11 @@
-from threading import Thread
+# Author: Colin Andress
+# Project: Simple Chatbot
+# Filename: thread_cleaner.py
+# Description: The class to clean game threads from memory
+
 import logging
+from threading import Thread
+
 
 class ThreadCleaner(Thread):
     

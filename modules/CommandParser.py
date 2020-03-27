@@ -2,6 +2,7 @@
 # Project: Simple Chatbot
 # Filename: CommandParser.py
 # Purpose: Parses commands from the config file and formats the response.
+
 from Database.SQLiteConnector import SQLiteConnector
 
 

@@ -88,6 +88,8 @@ class TwitchBot(SingleServerIRCBot):
             message = e.arguments[0]
             username = data.username
             user_color = data.user_color
+            if user_color is None:
+                user_color = "#ff0000"
             print(fg(user_color) + f'[{username}]' + self.reset_color + f': {message}')
             if self.settings["bot_settings"].get("log_chat") is not None:
                 if self.settings["bot_settings"]["log_chat"] == 1:

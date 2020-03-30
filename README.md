@@ -7,7 +7,7 @@ A chatbot written in Python for Twitch chat. Keep your viewers engaged with an i
 - [IRC Library](https://pypi.org/project/irc/)
 - [Colored Library](https://pypi.org/project/colored/)
 
-(Command to get dependencies: `pip install requirements.txt`)
+(Command to get dependencies: `pip install -r requirements.txt`)
 
 ## Setup
 First off you need to run the main script to generate a template config so you can fill in the info needed (see **"How to Run"** below to learn how to run the bot). You will need your own bot account and you will need to [register it as a twitch application](https://dev.twitch.tv/console). Once registered, you can get the client ID there and add it in the config file. Then you need to generate an OAuth token using [this tool](https://twitchapps.com/tmi/) while logged into the bot account (**NOT** the streamer account).

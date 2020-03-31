@@ -9,47 +9,48 @@ from Database.SQLiteConnector import SQLiteConnector
 
 class Data:
     
-    def __init__(self, e):
+    def __init__(self, event):
         self.username = None
         self.userid = None
         self.is_broadcaster = False
         self.is_mod = False
         self.user_color = None
         self.has_set_color = False
+        self.event = event
         self.database = SQLiteConnector()
         
-        self.set_information(e)
+        self.set_information()
         if self.has_set_color is False:
             self.set_color()
         
-    def set_information(self, e):
-        for i in range(len(e.tags)):
+    def set_information(self):
+        for i in range(len(self.event.tags)):
             # Set their username
-            if e.tags[i]['key'] == 'display-name':
-                self.username = e.tags[i]['value']
+            if self.event.tags[i]['key'] == 'display-name':
+                self.username = self.event.tags[i]['value']
                 
             # Set their userid
-            elif e.tags[i]['key'] == 'user-id':
-                self.userid = e.tags[i]['value']
+            elif self.event.tags[i]['key'] == 'user-id':
+                self.userid = self.event.tags[i]['value']
                 
             # Set their user color
-            elif e.tags[i]['key'] == "color":
-                self.user_color = e.tags[i]['value']
+            elif self.event.tags[i]['key'] == "color":
+                self.user_color = self.event.tags[i]['value']
                 if self.user_color is None:
                     self.has_set_color = False
                 else:
                     self.has_set_color = True
                 
             # Set if they are a broadcaster
-            elif e.tags[i]['key'] == 'badges':
-                if e.tags[i]['value'] == 'broadcaster/1':
+            elif self.event.tags[i]['key'] == 'badges':
+                if self.event.tags[i]['value'] == 'broadcaster/1':
                     self.is_broadcaster = True
                 else:
                     self.is_broadcaster = False
                     
             # Set if they are a mod
-            elif e.tags[i]['key'] == 'mod':
-                if e.tags[i]['value'] == '1':
+            elif self.event.tags[i]['key'] == 'mod':
+                if self.event.tags[i]['value'] == '1':
                     self.is_mod = True
                 else:
                     self.is_mod = False

@@ -59,48 +59,55 @@ class TwitchBot(SingleServerIRCBot):
         self.logger.info(f'Connecting to {server} on port {port}')
         SingleServerIRCBot.__init__(self, [(server, port, token)], username, username)
 
-    def on_welcome(self, c, e):
+    def on_welcome(self, connection, event):
         self.logger.info(f'Joining {self.channel}')
         # Making general requests from twitch so the bot can function
-        c.cap('REQ', ':twitch.tv/membership')
-        c.cap('REQ', ':twitch.tv/tags')
-        c.cap('REQ', ':twitch.tv/commands')
-        c.join(self.channel)
-
+        connection.cap('REQ', ':twitch.tv/membership')
+        connection.cap('REQ', ':twitch.tv/tags')
+        connection.cap('REQ', ':twitch.tv/commands')
+        connection.join(self.channel)
+        
     # if we get a notice that a message we sent was invalid, print the notice
-    def on_pubnotice(self, c, e):
-        if e.arguments[0]:
-            print(fg("#ff0000") + f"PUBNOTICE FROM TWITCH:{self.reset_color} {e.arguments[0]}")
+    def on_pubnotice(self, connection, event):
+        if event.arguments[0]:
+            print(fg("#ff0000") + f"PUBNOTICE FROM TWITCH:{self.reset_color} {event.arguments[0]}")
 
     # if we get a whisper, treat it like a normal message
-    def on_whisper(self, c, e):
-        self.on_pubmsg(c, e)
+    def on_whisper(self, connection, event):
+        self.on_pubmsg(connection, event)
 
-    def on_pubmsg(self, c, e):
-        data = Data(e)
+    def on_pubmsg(self, connection, event):
+        data = Data(event)
         data.check_valid_username()
+        
+        # Add the user to the channel's users list if they do not already exist in it.
+        # The library should handle removal from the PART message in IRC
+        chan = event.target
+        if event.source.nick not in self.channels[chan].users():
+            self.channels[chan].add_user(event.source.nick)
+        
         # If a chat message starts with an exclamation point, try to run it as a command
-        if e.arguments[0][:1] == '!':
-            cmd = e.arguments[0][1:].split(' ')
-            self.do_command(e, cmd)
+        if event.arguments[0][:1] == '!':
+            cmd = event.arguments[0][1:].split(' ')
+            self.do_command(event, cmd)
         # If it is any other chat message, print the username and message to the console
         else:
-            message = e.arguments[0]
+            message = event.arguments[0]
             username = data.username
             user_color = data.user_color
             print(fg(user_color) + f'[{username}]' + self.reset_color + f': {message}')
             if self.settings["bot_settings"].get("log_chat") is not None:
                 if self.settings["bot_settings"]["log_chat"] == 1:
-                    self.logger.info(f'CHAT MESSAGE: {username} said {message}')
+                    self.logger.info(f'CHAT MESSAGE: {username}: {message}')
 
-    def do_command(self, e, cmd):
-        data = Data(e)
+    def do_command(self, event, cmd):
+        data = Data(event)
         if cmd[0] == 'debug':
-            debug_command = DebugCommand(data, self.connection, self.channel, self.channel_id, e)
+            debug_command = DebugCommand(data, self.connection, self.channel, self.channel_id, event)
             debug_command.start()
         # if it isn't the debug command, try some other commands.
         else:
-            cmd_message = e.arguments[0][1:]
+            cmd_message = event.arguments[0][1:]
             self.logger.info(f'Recieved Command "{cmd_message}" from {data.username}')
             
             # If the command is the !join command
@@ -122,7 +129,7 @@ class TwitchBot(SingleServerIRCBot):
                         # Forward the event to all dice games and let it parse if the user running it is being waited on.
                         checks_for_player_two = []
                         for game in self.dice_games:
-                            test = game.on_pubmsg(data)
+                            test = game.check_player_two(data)
                             checks_for_player_two.append(test)
                         # Basically just counts all the returns for the dice game instances and if all elements are false, that means the
                         # user is not being waited on.
@@ -130,7 +137,7 @@ class TwitchBot(SingleServerIRCBot):
                             self.connection.privmsg(self.channel, f"You are not being waited on for a dice game, {data.username}. Start a dice game with \"!dice <opponent name> <bet>\"")
                     # If it isn't "accept" we wanna start a new dice battle
                     else:
-                        dice_game = DiceGame(data, self.connection, self.channel, self.settings, cmd)
+                        dice_game = DiceGame(data, cmd, self)
                         dice_game.start()
                         self.dice_games.append(dice_game)
                 else:
@@ -142,9 +149,9 @@ class TwitchBot(SingleServerIRCBot):
                 for i in cmd:
                     tmp.append(i + ' ')
                 cmd = ''.join(tmp)[:-1]
-                response = CommandParser.parse_command(e, settings, cmd, data)
+                response = CommandParser.parse_command(event, settings, cmd, data)
                 self.connection.privmsg(self.channel, response)
-                
+    
     def init_logger(self):
         logger = logging.getLogger("chatbot")
         handler = logging.FileHandler(filename="chatbot_log.log", encoding="utf-8", mode="a")
@@ -154,6 +161,12 @@ class TwitchBot(SingleServerIRCBot):
         logger.setLevel(logging.INFO)
         logger.propagate = False
         return logger
+
+    def get_users(self):
+        # The IRC Bot library only populates the users list using "JOIN" messages from IRC
+        # Users present in chat before the bot joined will not show up in this list. 
+        # (there is no alternative... other than using the tmi link for chat users which is not reliable anyways.)
+        return list(self.channels.get(self.channel).users())
 
 
 def main():

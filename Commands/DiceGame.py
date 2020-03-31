@@ -15,12 +15,13 @@ from Database.SQLiteConnector import SQLiteConnector
 
 class DiceGame(Thread):
 
-    def __init__(self, data, conn, chan, sett, cmd):
+    def __init__(self, data, cmd, bot_instance):
         Thread.__init__(self)
+        self.instance = bot_instance
         self.usage = "Use \"!dice <opponent name> <bet>\" to start a game or \"!dice accept\" to accept a battle."
-        self.settings = sett
-        self.connection = conn
-        self.channel = chan
+        self.settings = self.instance.settings
+        self.connection = self.instance.connection
+        self.channel = self.instance.channel
         self.cmd = cmd
         self.waiting_for_accept = True
         self.player_one = data
@@ -126,20 +127,7 @@ class DiceGame(Thread):
         Boolean -- Whether or not player two is in the chat
     """    
     def is_player_two_in_chat(self):
-        # Change URL if you are copying the bot and want to use dice game.
-        chan_name = self.settings["bot_settings"]["channel"]
-        url = f"https://tmi.twitch.tv/group/user/{chan_name}/chatters"
-        req = requests.get(url).json()
-        chatters = req["chatters"]
-        # This URL returns a JSON object that has the channel's chatters in it. 
-        # We get the ["chatters"] which has sub keys that have a list of viewers that fit each one (broadcaster, mod, viewer, etc).
-        # This just loops over all of those sub keys and checks if the user is present.
-        for key in chatters:
-            user_category = chatters[key]
-            for user in user_category:
-                if user == self.player_to_wait_for.lower():
-                    return True
-        return False
+        return self.player_to_wait_for.lower() in self.instance.get_users()
 
     """Checks whether the user is challenging themself to a dice battle.
     Returns:
@@ -157,7 +145,7 @@ class DiceGame(Thread):
     Returns:
         Boolean -- Returns whether or not the player was the one we were waiting for in this dice game.
     """    
-    def on_pubmsg(self, data):
+    def check_player_two(self, data):
         if data.username.lower() == self.player_to_wait_for.lower():
             self.player_two = data
             self.waiting_for_accept = False

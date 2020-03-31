@@ -85,11 +85,5 @@ class SlotsGame(Thread):
         self.connection.privmsg(self.channel, msg)
 
     def roll_slots(self):
-        slots_result = []
-        for i in range(3):
-            # To supress unused warning for i
-            del i
-            # Picks a random choice from the reel and appends it to an array that gets returned at the end
-            slot = random.choice(self.reel)
-            slots_result.append(slot)
-        return slots_result
+        # Fancy list comprehension to roll the slots
+        return [random.choice(self.reel) for i in range(3)]

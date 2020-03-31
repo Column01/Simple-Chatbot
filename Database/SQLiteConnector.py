@@ -183,7 +183,8 @@ class SQLiteConnector:
             color = color[0]
             if color is not None:
                 return color
-        return None
+        else:
+            return None
     
     """Sets the user's color in the database
     Parameters:

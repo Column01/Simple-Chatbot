@@ -35,13 +35,12 @@ class JoinCommand(Thread):
             self.database.set_cooldown(self.user.userid, "join", self.cooldown)
             self.send_message(self.success_message.format(username=self.user.username, reward=self.reward,
                                                           command="join"))
-            return
         else:
             # Send a message with the cooldown remainder
             minutes, seconds = divmod(user_cooldown, 60)
             self.send_message(self.cooldown_message.format(username=self.user.username, minutes=minutes,
                                                            seconds=seconds))
-            return
+        return
     
     def send_message(self, msg):
         self.connection.privmsg(self.channel, msg)

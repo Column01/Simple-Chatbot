@@ -19,4 +19,4 @@ def parse_command(e, settings, cmd, data):
             pass
     else:
         response = f"Unknown command '{cmd}'. Did you type it correctly?"
-    return response
+        return response

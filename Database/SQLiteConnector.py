@@ -205,3 +205,12 @@ class SQLiteConnector:
         self.conn.commit()
         username = self.get_username(userid)
         self.logger.info(f"Set {username}'s color to {hex_value}")
+
+    """Wipes the user colors from the database
+    Called when the chatbot is exited. 
+    This means users will have a random color each time in console to emulate what twitch does on their frontend.
+    """    
+    def clear_colors(self):
+        self.cursor.execute("UPDATE users SET color = Null")
+        self.conn.commit()
+        self.logger.info("Set all user colors to Null.")

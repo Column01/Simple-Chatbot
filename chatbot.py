@@ -173,5 +173,8 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("Received Keyboard Interrupt, closing chatbot and cleaning up...")
         logger = logging.getLogger("chatbot")
-        logger.info("Recieved keyboard interrupt. Script closing now\n")
+        logger.info("Received Keyboard Interrupt. Closing bot now")
+        database = SQLiteConnector()
+        database.clear_colors()
+        logger.info("Script exiting. See you next time!\n")
         os._exit(0)

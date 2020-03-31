@@ -94,15 +94,11 @@ class SQLiteConnector:
         if usernamedb is None:
             self.logger.info(f'Adding {username} to database...')
             self.add_user(userid, username, 0)
-            return
-        elif username == usernamedb:
-            return
         elif username != usernamedb:
             self.logger.info(f'{username} has mismatched usernames. Updating.')
             self.cursor.execute("UPDATE users SET username = ? WHERE userid = ?", (username, userid))
             self.conn.commit()
             self.logger.info("Updated username into database")
-            return
     
     """Adds the user to the database
     Parameters:
@@ -114,7 +110,6 @@ class SQLiteConnector:
         self.cursor.execute("INSERT INTO users (userid, username, currency, _join, _slots, _dice) VALUES (?, ?, ?, ?, ?, ?)",
                 (userid, username, currency, 0, 0, 0))
         self.conn.commit()
-        return
     
     """Adds the currency for the userID in the database
     Parameters:
@@ -128,7 +123,6 @@ class SQLiteConnector:
         self.conn.commit()
         username = self.get_username(userid)
         self.logger.info(f"Added {amount} currency to {username}")
-        return
     
     """Sets the user's cooldown for the specified game
     Parameters:
@@ -142,7 +136,6 @@ class SQLiteConnector:
         self.conn.commit()
         username = self.get_username(userid)
         self.logger.info(f"Put {username} on cooldown for {game} for {cooldown} seconds")
-        return
     
     """Remove the specified amount of currency from the user
     Parameters:
@@ -172,10 +165,7 @@ class SQLiteConnector:
     """    
     def has_enough_currency(self, userid, amount):
         currency_db = self.get_currency(userid)
-        if currency_db >= amount:
-            return True
-        else:
-            return False
+        return currency_db >= amount
     
     """Get the user's chat color
     Parameters:

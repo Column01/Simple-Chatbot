@@ -17,7 +17,7 @@ class ConfigTemplate:
                 "token": "Bot oauth token",
                 "channel": "Streamer name",
                 "client_id": "Client ID of bot account",
-                "log_chat": 0
+                "log_chat": False
             },
             "commands": {
                 "coins": {

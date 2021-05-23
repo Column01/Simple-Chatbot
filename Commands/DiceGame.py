@@ -36,7 +36,6 @@ class DiceGame(Thread):
 
     def run(self):
         self.start_game()
-        return
 
     def start_game(self):
         # Check if the game is valid
@@ -77,18 +76,15 @@ class DiceGame(Thread):
                 # Remove player two's wager since they lost
                 self.database.remove_currency(self.player_two.userid, self.wager)
                 self.send_message(f"Congratulations {self.player_one.username}! You won the battle and won {self.wager} coins!")
-                return
             elif player_two_roll > player_one_roll:
                 # Player two wins the dice roll. Give them their winings
                 self.database.add_currency(self.player_two.userid, self.wager)
                 # Remove player one's wager since they lost
                 self.database.remove_currency(self.player_one.userid, self.wager)
                 self.send_message(f"Congratulations {self.player_two.username}! You won the battle and won {self.wager} coins!")
-                return
         # This happens when the timer expires on the dice battle.
         elif self.waiting_for_accept is None:
             self.send_message(f"Sorry, {self.player_one.username}. The game timer expired while waiting for {self.player_to_wait_for} to accept the dice battle.")
-            return
 
     def is_valid_game(self):
         """Checks various things to see if the game can progress

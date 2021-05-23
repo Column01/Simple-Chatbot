@@ -39,7 +39,6 @@ class JoinCommand(Thread):
             minutes, seconds = divmod(user_cooldown, 60)
             self.send_message(self.cooldown_message.format(username=self.user.username, minutes=minutes,
                                                            seconds=seconds))
-        return
     
     def send_message(self, msg):
         self.connection.privmsg(self.channel, msg)

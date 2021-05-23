@@ -68,22 +68,19 @@ class SlotsGame(Thread):
                 elif slots[0] != slots[1] and slots[0] != slots[2] and slots[2] != slots[1]:
                     self.send_message(f"I'm sorry, {self.user.username}, but you lost!")
                     
-                return
             # Not enough currency to play
             else:
                 self.send_message(f"You have insufficient currency, {self.user.username}. The slots requires 100 coins Run !coins to see "
                                   "your balance. You can also run !join to gain some to kick start your earning!")
-                return
 
         # If they are on cooldown, message them the cooldown
         else:
             minutes, seconds = divmod(user_cooldown, 60)
             self.send_message(f"Sorry {self.user.username}. You are on cooldown for {minutes} minutes and {seconds} seconds!")
-            return
 
     def send_message(self, msg):
         self.connection.privmsg(self.channel, msg)
 
     def roll_slots(self):
         # Fancy list comprehension to roll the slots
-        return [random.choice(self.reel) for i in range(3)]
+        return [random.choice(self.reel) for _ in range(3)]

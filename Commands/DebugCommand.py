@@ -33,7 +33,6 @@ class DebugCommand(Thread):
             self.send_message(f"You are not authorized to use the debug command, {self.user.username}. "
                               "Please ask the streamer for permission if you believe this is "
                               "an error.")
-        return
     
     def send_message(self, msg):
         self.connection.privmsg(self.channel, msg)

@@ -38,7 +38,7 @@ class TwitchBot(SingleServerIRCBot):
     def __init__(self, username, client_id, token, chan, settings):
         self.reset_color = attr("reset")
         print(fg("#00ff00") + "Thanks for using the chatbot! Use Ctrl+C to exit safely." + self.reset_color)
-        self.logger = self.init_logger()
+        self.init_logger()
         self.client_id = client_id
         self.token = token
         self.channel = '#' + chan
@@ -149,14 +149,13 @@ class TwitchBot(SingleServerIRCBot):
                 self.connection.privmsg(self.channel, response)
     
     def init_logger(self):
-        log = logging.getLogger("chatbot")
+        self.logger = logging.getLogger("chatbot")
         handler = logging.FileHandler(filename="chatbot_log.log", encoding="utf-8", mode="a")
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
-        log.addHandler(handler)
-        log.setLevel(logging.INFO)
-        log.propagate = False
-        return log
+        self.logger.addHandler(handler)
+        self.logger.setLevel(logging.INFO)
+        self.logger.propagate = False
 
     def get_users(self):
         # The IRC Bot library only populates the users list using "JOIN" messages from IRC

@@ -5,6 +5,7 @@
 
 import json
 
+
 class ConfigTemplate:
 
     def __init__(self):
@@ -22,7 +23,7 @@ class ConfigTemplate:
                 "coins": {
                     "response": "{username} has {currency} coins to spend, Go play some games :P"
                 },
-                "discord":{
+                "discord": {
                     "response": "Join my discord here: https://discord.gg/5J49NNT Kappa"
                 },
                 "nani": {
@@ -70,5 +71,5 @@ class ConfigTemplate:
         with open('config.json', 'w+') as s:
             json.dump(self.template, s, indent=4)
         print("Config file was not found. Generated template config and will exit the chatbot. "
-            "\nEditing of the file is required to use the bot so please see the readme for instructions.")
+              "\nEditing of the file is required to use the bot so please see the readme for instructions.")
         exit(0)

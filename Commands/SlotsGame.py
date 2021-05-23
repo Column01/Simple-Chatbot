@@ -11,7 +11,7 @@ from Database.SQLiteConnector import SQLiteConnector
 
 
 class SlotsGame(Thread):
-    
+    """Slots game"""
     def __init__(self, data, conn, chan, settings):
         Thread.__init__(self)
         self.user = data
@@ -69,10 +69,10 @@ class SlotsGame(Thread):
                     self.send_message(f"I'm sorry, {self.user.username}, but you lost!")
                     
                 return
-            # Not enough currency to play    
+            # Not enough currency to play
             else:
                 self.send_message(f"You have insufficient currency, {self.user.username}. The slots requires 100 coins Run !coins to see "
-                                   "your balance. You can also run !join to gain some to kick start your earning!")
+                                  "your balance. You can also run !join to gain some to kick start your earning!")
                 return
 
         # If they are on cooldown, message them the cooldown

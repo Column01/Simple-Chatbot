@@ -7,6 +7,7 @@ import random
 
 from Database.SQLiteConnector import SQLiteConnector
 
+
 class Data:
     
     def __init__(self, event):
@@ -63,7 +64,7 @@ class Data:
     def set_color(self):
         color = self.database.get_user_color(self.userid)
         if color is None:
-            name_colors = ["#0000FF", "#ff7f50", "#1e90ff", "#00ff00", "#9acd32", "#00ff00", "#ffd700", "#ff4500", "#ff0000","#ff69b4", "#5f9ea0", "#2e8b57","#d2691e", "#8a2be2", "#b22222"]
+            name_colors = ["#0000FF", "#ff7f50", "#1e90ff", "#00ff00", "#9acd32", "#00ff00", "#ffd700", "#ff4500", "#ff0000", "#ff69b4", "#5f9ea0", "#2e8b57", "#d2691e", "#8a2be2", "#b22222"]
             rand_color = random.choice(name_colors)
             self.database.set_user_color(self.userid, rand_color)
             self.user_color = rand_color

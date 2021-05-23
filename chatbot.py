@@ -6,10 +6,9 @@
 import json
 import logging
 import os
-import sys
 
 import requests
-from colored import attr, bg, fg
+from colored import attr, fg
 from irc.bot import SingleServerIRCBot
 
 import modules.CommandParser as CommandParser
@@ -21,6 +20,7 @@ from Database.SQLiteConnector import SQLiteConnector
 from modules.config import ConfigTemplate
 from modules.Data import Data
 from modules.thread_cleaner import ThreadCleaner
+
 
 # Load the config file and check if it exists. If it doesn't, generate a template config and quit.
 configFile = 'config.json'
@@ -35,6 +35,7 @@ except FileNotFoundError:
 
 
 class TwitchBot(SingleServerIRCBot):
+    """Main bot class"""
     def __init__(self, username, client_id, token, chan, settings):
         self.reset_color = attr("reset")
         print(fg("#00ff00") + "Thanks for using the chatbot! Use Ctrl+C to exit safely." + self.reset_color)
@@ -59,7 +60,7 @@ class TwitchBot(SingleServerIRCBot):
         self.logger.info(f'Connecting to {server} on port {port}')
         SingleServerIRCBot.__init__(self, [(server, port, token)], username, username)
 
-    def on_welcome(self, connection, event):
+    def on_welcome(self, connection, _):
         self.logger.info(f'Joining {self.channel}')
         # Making general requests from twitch so the bot can function
         connection.cap('REQ', ':twitch.tv/membership')
@@ -68,7 +69,7 @@ class TwitchBot(SingleServerIRCBot):
         connection.join(self.channel)
         
     # if we get a notice that a message we sent was invalid, print the notice
-    def on_pubnotice(self, connection, event):
+    def on_pubnotice(self, _, event):
         if event.arguments[0]:
             print(fg("#ff0000") + f"PUBNOTICE FROM TWITCH:{self.reset_color} {event.arguments[0]}")
 
@@ -76,7 +77,7 @@ class TwitchBot(SingleServerIRCBot):
     def on_whisper(self, connection, event):
         self.on_pubmsg(connection, event)
 
-    def on_pubmsg(self, connection, event):
+    def on_pubmsg(self, _, event):
         data = Data(event)
         data.check_valid_username()
         
@@ -124,7 +125,7 @@ class TwitchBot(SingleServerIRCBot):
             elif cmd[0] == 'dice':
                 # Make sure we have all arguments for the cmd.
                 if len(cmd) >= 2:
-                    # If the second argument is "accept" that means its a user accepting a dice battle from another person. 
+                    # If the second argument is "accept" that means its a user accepting a dice battle from another person.
                     if cmd[1] == "accept":
                         # Forward the event to all dice games and let it parse if the user running it is being waited on.
                         checks_for_player_two = []
@@ -153,18 +154,18 @@ class TwitchBot(SingleServerIRCBot):
                 self.connection.privmsg(self.channel, response)
     
     def init_logger(self):
-        logger = logging.getLogger("chatbot")
+        log = logging.getLogger("chatbot")
         handler = logging.FileHandler(filename="chatbot_log.log", encoding="utf-8", mode="a")
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-        logger.propagate = False
-        return logger
+        log.addHandler(handler)
+        log.setLevel(logging.INFO)
+        log.propagate = False
+        return log
 
     def get_users(self):
         # The IRC Bot library only populates the users list using "JOIN" messages from IRC
-        # Users present in chat before the bot joined will not show up in this list. 
+        # Users present in chat before the bot joined will not show up in this list.
         # (there is no alternative... other than using the tmi link for chat users which is not reliable anyways.)
         return list(self.channels.get(self.channel).users())
 

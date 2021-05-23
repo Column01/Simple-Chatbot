@@ -6,7 +6,7 @@
 from Database.SQLiteConnector import SQLiteConnector
 
 
-def parse_command(e, settings, cmd, data):
+def parse_command(_, settings, cmd, data):
     database = SQLiteConnector()
     username = data.username
     user_id = data.userid

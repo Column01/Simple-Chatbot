@@ -10,8 +10,7 @@ from Database.SQLiteConnector import SQLiteConnector
 
 
 class JoinCommand(Thread):
-    
-    # Probably overkill to use a thread for this but why not
+    """Join command, gives the user currency to start playing games"""
     def __init__(self, data, conn, chan, settings):
         Thread.__init__(self)
         self.user = data

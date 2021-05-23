@@ -180,13 +180,11 @@ class SQLiteConnector:
         """
         self.cursor.execute("SELECT color, userid FROM users WHERE userid = ?", (userid,))
         color = self.cursor.fetchone()
+        if color is None:
+            return color
         if helpers.test_list_item(color, 0):
-            color = color[0]
-            if color is not None:
-                return color
-        else:
-            return None
-    
+            return color[0]
+
     def set_user_color(self, userid, hex_value):
         """Sets the user's color in the database
         Parameters:

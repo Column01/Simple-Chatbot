@@ -8,19 +8,18 @@ import random
 from threading import Thread
 from timeit import default_timer as timer
 
-import requests
-
 from Database.SQLiteConnector import SQLiteConnector
 
 
 class DiceGame(Thread):
-
-    def __init__(self, data, conn, chan, sett, cmd):
+    """Dice game"""
+    def __init__(self, data, cmd, bot_instance):
         Thread.__init__(self)
+        self.instance = bot_instance
         self.usage = "Use \"!dice <opponent name> <bet>\" to start a game or \"!dice accept\" to accept a battle."
-        self.settings = sett
-        self.connection = conn
-        self.channel = chan
+        self.settings = self.instance.settings
+        self.connection = self.instance.connection
+        self.channel = self.instance.channel
         self.cmd = cmd
         self.waiting_for_accept = True
         self.player_one = data
@@ -37,15 +36,14 @@ class DiceGame(Thread):
 
     def run(self):
         self.start_game()
-        return
 
     def start_game(self):
         # Check if the game is valid
         if not self.is_valid_game():
             return
         self.send_message(f"Hey @{self.player_to_wait_for}! "
-                            f"{self.player_one.username} has challenged you to a dice battle for {self.wager} coins. "
-                            "Type \"!dice accept\" to accept the dice battle! Request will expire in 60 seconds.")
+                          f"{self.player_one.username} has challenged you to a dice battle for {self.wager} coins. "
+                          "Type \"!dice accept\" to accept the dice battle! Request will expire in 60 seconds.")
         start_time = timer()
         # Loop to wait for the second player to accept the duel.
         while self.waiting_for_accept:
@@ -53,7 +51,7 @@ class DiceGame(Thread):
             if timer_duration >= 60:
                 self.waiting_for_accept = None
         # waiting for accept is changed externally when the second user accepts the battle.
-        if self.waiting_for_accept == False:
+        if self.waiting_for_accept is False:
             # Check if player two can afford to battle, and if they can't, tell them and end the game.
             p_two_cost_check = self.database.has_enough_currency(self.player_two.userid, self.wager)
             if not p_two_cost_check:
@@ -78,24 +76,21 @@ class DiceGame(Thread):
                 # Remove player two's wager since they lost
                 self.database.remove_currency(self.player_two.userid, self.wager)
                 self.send_message(f"Congratulations {self.player_one.username}! You won the battle and won {self.wager} coins!")
-                return
             elif player_two_roll > player_one_roll:
                 # Player two wins the dice roll. Give them their winings
                 self.database.add_currency(self.player_two.userid, self.wager)
                 # Remove player one's wager since they lost
                 self.database.remove_currency(self.player_one.userid, self.wager)
                 self.send_message(f"Congratulations {self.player_two.username}! You won the battle and won {self.wager} coins!")
-                return
         # This happens when the timer expires on the dice battle.
-        elif self.waiting_for_accept == None:
+        elif self.waiting_for_accept is None:
             self.send_message(f"Sorry, {self.player_one.username}. The game timer expired while waiting for {self.player_to_wait_for} to accept the dice battle.")
-            return
 
-    """Checks various things to see if the game can progress
-    Returns:
-        Boolean -- If the game is valid or not
-    """    
     def is_valid_game(self):
+        """Checks various things to see if the game can progress
+        Returns:
+            Boolean -- If the game is valid or not
+        """
         player_one_cooldown = self.database.get_cooldown(self.player_one.userid, "dice")
         # Player one is on cooldown still
         if player_one_cooldown != 0:
@@ -121,43 +116,29 @@ class DiceGame(Thread):
         else:
             return True
 
-    """Checks if player two is present in the chat
-    Returns:
-        Boolean -- Whether or not player two is in the chat
-    """    
     def is_player_two_in_chat(self):
-        # Change URL if you are copying the bot and want to use dice game.
-        chan_name = self.settings["bot_settings"]["channel"]
-        url = f"https://tmi.twitch.tv/group/user/{chan_name}/chatters"
-        req = requests.get(url).json()
-        chatters = req["chatters"]
-        # This URL returns a JSON object that has the channel's chatters in it. 
-        # We get the ["chatters"] which has sub keys that have a list of viewers that fit each one (broadcaster, mod, viewer, etc).
-        # This just loops over all of those sub keys and checks if the user is present.
-        for key in chatters:
-            user_category = chatters[key]
-            for user in user_category:
-                if user == self.player_to_wait_for.lower():
-                    return True
-        return False
+        """Checks if player two is present in the chat
+        Returns:
+            Boolean -- Whether or not player two is in the chat
+        """
+        return self.player_to_wait_for.lower() in self.instance.get_users()
 
-    """Checks whether the user is challenging themself to a dice battle.
-    Returns:
-        Boolean -- Whether or not they challenged themselves
-    """    
     def is_challenging_self(self):
+        """Checks whether the user is challenging themself to a dice battle.
+        Returns:
+            Boolean -- Whether or not they challenged themselves
+        """
         return self.player_one.username.lower() == self.player_to_wait_for.lower()
     
-    """Sends a chat message to the channel
-    """
     def send_message(self, msg):
+        """Sends a chat message to the channel"""
         self.connection.privmsg(self.channel, msg)
     
-    """pubmsg event for each dice game.
-    Returns:
-        Boolean -- Returns whether or not the player was the one we were waiting for in this dice game.
-    """    
-    def on_pubmsg(self, data):
+    def check_player_two(self, data):
+        """pubmsg event for each dice game.
+        Returns:
+            Boolean -- Returns whether or not the player was the one we were waiting for in this dice game.
+        """
         if data.username.lower() == self.player_to_wait_for.lower():
             self.player_two = data
             self.waiting_for_accept = False

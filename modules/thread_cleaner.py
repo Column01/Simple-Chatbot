@@ -8,7 +8,7 @@ from threading import Thread
 
 
 class ThreadCleaner(Thread):
-    
+    """Cleans up dice game threads from the queue if they are complete"""
     def __init__(self, bot_instance):
         Thread.__init__(self)
         self.twitch_bot_instance = bot_instance

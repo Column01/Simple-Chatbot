@@ -10,8 +10,7 @@ from Database.SQLiteConnector import SQLiteConnector
 
 
 class JoinCommand(Thread):
-    
-    # Probably overkill to use a thread for this but why not
+    """Join command, gives the user currency to start playing games"""
     def __init__(self, data, conn, chan, settings):
         Thread.__init__(self)
         self.user = data
@@ -35,13 +34,11 @@ class JoinCommand(Thread):
             self.database.set_cooldown(self.user.userid, "join", self.cooldown)
             self.send_message(self.success_message.format(username=self.user.username, reward=self.reward,
                                                           command="join"))
-            return
         else:
             # Send a message with the cooldown remainder
             minutes, seconds = divmod(user_cooldown, 60)
             self.send_message(self.cooldown_message.format(username=self.user.username, minutes=minutes,
                                                            seconds=seconds))
-            return
     
     def send_message(self, msg):
         self.connection.privmsg(self.channel, msg)

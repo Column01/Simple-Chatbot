@@ -7,7 +7,6 @@ import json
 import logging
 import os
 
-import requests
 from colored import attr, fg
 from irc.bot import SingleServerIRCBot
 
@@ -46,11 +45,7 @@ class TwitchBot(SingleServerIRCBot):
         self.dice_games = []
         self.settings = settings
         self.database = SQLiteConnector()
-        # Get the channel id for v5 API calls if wanted
-        url = f'https://api.twitch.tv/helix/users?login={chan}'
-        headers = {'Client-ID': client_id, 'Accept': 'application/vnd.twitchtv.v5+json'}
-        r = requests.get(url, headers=headers).json()
-        self.channel_id = r['data'][0]['id']
+
         # Initialize the thread cleaner
         t_cleaner = ThreadCleaner(self)
         t_cleaner.start()
@@ -104,7 +99,7 @@ class TwitchBot(SingleServerIRCBot):
     def do_command(self, event, cmd):
         data = Data(event)
         if cmd[0] == 'debug':
-            debug_command = DebugCommand(data, self.connection, self.channel, self.channel_id, event)
+            debug_command = DebugCommand(data, self.connection, self.channel, event)
             debug_command.start()
         # if it isn't the debug command, try some other commands.
         else:

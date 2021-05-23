@@ -9,12 +9,11 @@ from threading import Thread
 
 class DebugCommand(Thread):
     """Debug command, prints message tags and some misc info to the log"""
-    def __init__(self, data, conn, chan, chan_id, e):
+    def __init__(self, data, conn, chan, e):
         Thread.__init__(self)
         self.user = data
         self.connection = conn
         self.channel = chan
-        self.channel_id = chan_id
         self.e = e
         self.logger = logging.getLogger("chatbot")
         
@@ -27,8 +26,7 @@ class DebugCommand(Thread):
             json_tags = str(self.e.tags).replace("'", '"')
             self.logger.info(f"User Tags: {json_tags}\n"
                              f"Recieved Message: {self.e.arguments[0]}\n"
-                             f"Connected Channel: {self.channel}\n"
-                             f"Channel ID: {self.channel_id}\n")
+                             f"Connected Channel: {self.channel}\n")
         else:
             self.send_message(f"You are not authorized to use the debug command, {self.user.username}. "
                               "Please ask the streamer for permission if you believe this is "

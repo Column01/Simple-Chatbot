@@ -141,11 +141,7 @@ class TwitchBot(SingleServerIRCBot):
                                                           "\"!dice <opponent name> <bet>\" to start a new game.")
             # If the command is anything else, try and parse it from the config file and message the response.
             else:
-                tmp = []
-                for i in cmd:
-                    tmp.append(i + ' ')
-                cmd = ''.join(tmp)[:-1]
-                response = CommandParser.parse_command(event, settings, cmd, data)
+                response = CommandParser.parse_command(event, settings, ''.join([i + " " for i in cmd])[:-1], data)
                 self.connection.privmsg(self.channel, response)
     
     def init_logger(self):

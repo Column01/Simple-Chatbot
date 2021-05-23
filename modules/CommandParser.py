@@ -8,15 +8,9 @@ from Database.SQLiteConnector import SQLiteConnector
 
 def parse_command(_, settings, cmd, data):
     database = SQLiteConnector()
-    username = data.username
-    user_id = data.userid
-    currency = database.get_currency(user_id)
-    for i in settings['commands']:
-        if i == cmd:
-            response = settings['commands'][cmd]['response'].format(username=username, currency=currency, command=cmd)
-            return response
-        else:
-            pass
+    currency = database.get_currency(data.userid)
+    command = settings["commands"].get(cmd)
+    if command is None:
+        return f"Unknown command '{cmd}'. Did you type it correctly?"
     else:
-        response = f"Unknown command '{cmd}'. Did you type it correctly?"
-        return response
+        return command["response"].format(username=data.username, currency=currency, command=cmd)

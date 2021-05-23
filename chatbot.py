@@ -46,6 +46,12 @@ class TwitchBot(SingleServerIRCBot):
         self.settings = settings
         self.database = SQLiteConnector()
 
+        self.commands = {
+            "debug": DebugCommand,
+            "join": JoinCommand,
+            "slots": SlotsGame
+        }
+
         # Initialize the thread cleaner
         t_cleaner = ThreadCleaner(self)
         t_cleaner.start()
@@ -98,26 +104,15 @@ class TwitchBot(SingleServerIRCBot):
 
     def do_command(self, event, cmd):
         data = Data(event)
-        if cmd[0] == 'debug':
-            debug_command = DebugCommand(data, self.connection, self.channel, event)
-            debug_command.start()
-        # if it isn't the debug command, try some other commands.
+        cmd_message = event.arguments[0][1:]
+        self.logger.info(f'Recieved Command "{cmd_message}" from {data.username}')
+
+        command_handler = self.commands.get(cmd[0])
+        if command_handler is not None:
+            command_handler(data, self.connection, self.channel, self.settings, event).start()
         else:
-            cmd_message = event.arguments[0][1:]
-            self.logger.info(f'Recieved Command "{cmd_message}" from {data.username}')
-            
-            # If the command is the !join command
-            if cmd[0] == 'join':
-                join_command = JoinCommand(data, self.connection, self.channel, self.settings)
-                join_command.start()
-                
-            # If the command is !slots
-            elif cmd[0] == 'slots':
-                slots_game = SlotsGame(data, self.connection, self.channel, self.settings)
-                slots_game.start()
-                
             # If the command is !dice
-            elif cmd[0] == 'dice':
+            if cmd[0] == 'dice':
                 # Make sure we have all arguments for the cmd.
                 if len(cmd) >= 2:
                     # If the second argument is "accept" that means its a user accepting a dice battle from another person.

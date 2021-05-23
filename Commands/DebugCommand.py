@@ -9,7 +9,7 @@ from threading import Thread
 
 class DebugCommand(Thread):
     """Debug command, prints message tags and some misc info to the log"""
-    def __init__(self, data, conn, chan, e):
+    def __init__(self, data, conn, chan, _, e):
         Thread.__init__(self)
         self.user = data
         self.connection = conn

@@ -12,7 +12,7 @@ from Database.SQLiteConnector import SQLiteConnector
 
 class SlotsGame(Thread):
     """Slots game"""
-    def __init__(self, data, conn, chan, settings):
+    def __init__(self, data, conn, chan, settings, _):
         Thread.__init__(self)
         self.user = data
         self.connection = conn

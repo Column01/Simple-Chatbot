@@ -1,6 +1,8 @@
 # Simple Chatbot
 A chatbot written in Python for Twitch chat. Keep your viewers engaged with an interactive chatbot where they can earn currency and gamble for fun! Make fun little command responses that are unique to you!
 
+Want me to customize it for you? [You can pay me on Fiverr](https://www.fiverr.com/share/7GjQVL) to add custom features to the bot!
+
 ## Dependencies
 - [Python 3.6+](https://www.python.org/downloads/)
 - [Requests Library](https://pypi.org/project/requests/)
